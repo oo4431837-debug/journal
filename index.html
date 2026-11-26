@@ -16,7 +16,8 @@
 @media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1624;--card:#122338;--tx:#e8eef5;--mut:#8da0b5;--ac:#4aa3ff;--up:#2ecc8f;--dn:#ff6b7f;--bd:#1f3550}}
 :root[data-theme="dark"]{color-scheme:dark;--bg:#0b1624;--card:#122338;--tx:#e8eef5;--mut:#8da0b5;--ac:#4aa3ff;--up:#2ecc8f;--dn:#ff6b7f;--bd:#1f3550}
 *{box-sizing:border-box}html,body{margin:0}
-body{background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;max-width:640px;margin:auto;padding:12px 12px 84px}
+html{-webkit-text-size-adjust:100%}
+body{background:var(--bg);color:var(--tx);font:15px/1.55 system-ui,-apple-system,"Segoe UI",Tahoma,"Noto Sans Arabic",sans-serif;margin:0;padding:0 0 84px;font-variant-numeric:tabular-nums}
 h2{font-size:17px;margin:4px 0 10px}
 .card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
 .grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{grid-template-columns:1fr 1fr 1fr}
@@ -37,7 +38,7 @@ button{font:inherit;color:var(--tx)}
 nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
 nav button{flex:1;border:0;background:none;font-size:11px;color:var(--mut);padding:4px 0}
 nav button.on{color:var(--ac);font-weight:600}nav b{display:block;font-size:19px;line-height:1.2}
-.sheet{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:10;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 40px}
+.sheet{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:10;padding:0 max(14px,calc((100% - 720px)/2)) 40px;overscroll-behavior:contain}
 table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;text-align:start;border-bottom:1px solid var(--bd)}
 .wrap{overflow-x:auto}svg{width:100%;height:120px}
 .chat{min-height:160px}.b{padding:8px 10px;border-radius:12px;margin:6px 0;white-space:pre-wrap;max-width:92%}
@@ -54,9 +55,41 @@ table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;t
 .bar.risk{background:var(--bd)}.bar.risk i{background:var(--dn)}.bar.risk.good i{background:var(--up)}
 .qa{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;padding:8px 2px}.qa b{font-size:18px}
 .toast{position:fixed;top:calc(10px + env(safe-area-inset-top,0px));left:12px;right:12px;z-index:30;background:var(--card);border:1px solid var(--ac);padding:10px;border-radius:10px;text-align:center}
+
+/* ---- v2: top bar, layout, live block, responsive ---- */
+#top{position:sticky;top:0;z-index:6;background:var(--bg);border-bottom:1px solid var(--bd)}
+.in{max-width:980px;margin:0 auto;display:flex;align-items:center;gap:10px;padding:8px 14px;min-height:52px}
+.in h1,.sbar h1{font-size:17px;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.sbar{position:sticky;top:0;z-index:2;background:var(--bg);display:flex;align-items:center;gap:10px;padding:calc(10px + env(safe-area-inset-top,0px)) 0 10px;border-bottom:1px solid var(--bd);margin-bottom:10px}
+.back{font-weight:600;min-height:40px;padding:6px 14px;white-space:nowrap}
+.conn{font-size:11.5px;white-space:nowrap}.warn{color:#c47a0a}
+main{max-width:980px;margin:0 auto;padding:12px 14px}
+button{cursor:pointer;min-height:38px}.p{min-height:44px;font-weight:600}
+button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-visible{outline:2px solid var(--ac);outline-offset:1px}
+.card{box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:10px;align-items:start}.cards .card{margin:0}
+.cols{display:grid;gap:0 14px;align-items:start}
+.num{direction:ltr;unicode-bidi:isolate;display:inline-block}
+.live{margin-top:8px;padding-top:8px;border-top:1px dashed var(--bd)}
+.lg{display:grid;grid-template-columns:repeat(auto-fit,minmax(104px,1fr));gap:6px}
+.stc{background:var(--bg);border:1px solid var(--bd);border-radius:10px;padding:6px 8px}
+.stc span{display:block;font-size:11.5px;color:var(--mut)}.stc b{font-size:15px}
+.oi{margin-top:10px}.oi+.oi{border-top:1px solid var(--bd);padding-top:10px}
+@media(min-width:700px){main{padding:16px 20px}.p{width:auto;min-width:220px;padding:11px 26px}.cards .p,.sheet .row .p{min-width:0}}
+@media(min-width:900px){
+ body{padding:0 220px 0 0}
+ nav{left:auto;right:0;top:0;bottom:0;width:220px;flex-direction:column;justify-content:flex-start;gap:4px;border-top:0;border-inline-start:1px solid var(--bd);padding:16px 10px}
+ nav button{flex:none;display:flex;align-items:center;gap:10px;font-size:14px;padding:10px 12px;border-radius:10px;text-align:start}
+ nav b{display:inline-block;width:26px;font-size:18px}nav button.on{background:var(--bg)}
+ .cols{grid-template-columns:1fr 1fr}
+}
+@media(max-width:899px) and (max-height:500px) and (orientation:landscape){
+ body{padding-bottom:50px}nav button{font-size:12px;padding:2px 0}nav b{display:inline;font-size:15px;margin-inline-end:5px}.in{min-height:44px}
+}
 </style>
 </head>
 <body>
+<header id="top"></header>
 <main id="v"></main>
 <nav id="nav"></nav>
 <div id="sheet" class="sheet" hidden></div>
@@ -237,9 +270,9 @@ function tradesHtml(paper) {
     return `<div class="card"><div class="row"><b>${esc(t.symbol)} <span class="mut">${esc(t.tf || '')}</span></b><span><span class="tag ${t.side === 'long' ? 'up' : 'dn'}">${SIDE[t.side]}</span> <span class="tag">${STAT[t.status]}</span></span></div>
     <div class="mut">دخول ${f(t.entry, 6)} · وقف ${f(t.stop, 6)} · ${f(c.qty, 6)} وحدة (${f(c.usd)}$) · مخاطرة ${f(c.risk)}$</div>
     <div class="mut">أهداف: ${(t.tps || []).map((p, k) => f(p, 6) + ' (' + f(c.rrs[k], 1) + 'R)').join('، ') || '-'}${t.strategy ? ' · ' + esc(t.strategy) : ''}</div>
-    ${t.status === 'closed' ? `<div class="row"><span class="mut">خروج ${f(t.exit, 6)}</span><span class="big ${cls(c.pnl)}">${f(c.r)}R · ${f(c.pnl)}$</span></div>` : `<div class="row" style="margin-top:8px"><input id="x-${t.id}" type="number" inputmode="decimal" step="any" placeholder="سعر الخروج"><button class="s" data-a="close" data-id="${t.id}">إغلاق</button></div>`}
+    ${t.status !== 'closed' ? `<div class="live" data-lv="${t.id}">${liveHtml(t)}</div>` : ''}${t.status === 'closed' ? `<div class="row"><span class="mut">خروج ${f(t.exit, 6)}</span><span class="big ${cls(c.pnl)}">${f(c.r)}R · ${f(c.pnl)}$</span></div>` : `<div class="row" style="margin-top:8px"><input id="x-${t.id}" type="number" inputmode="decimal" step="any" placeholder="سعر الخروج"><button class="s" data-a="close" data-id="${t.id}">إغلاق</button></div>`}
     <div class="row" style="margin-top:8px"><button class="s" data-a="edit" data-id="${t.id}">تعديل</button><button class="s" data-a="del" data-id="${t.id}">${ui.del === t.id ? 'تأكيد الحذف' : 'حذف'}</button></div></div>`; }).join('');
-  return `<button class="p" style="margin:0 0 10px" data-a="add" data-k="${paper ? 'paper' : ''}">+ صفقة جديدة</button>${seg([['all', 'الكل'], ['open', 'مفتوحة'], ['pending', 'معلقة'], ['closed', 'مغلقة']], ui.filter, 'filter')}${list || '<div class="card mut">لا توجد صفقات.</div>'}`;
+  return `<button class="p" style="margin:0 0 10px" data-a="add" data-k="${paper ? 'paper' : ''}">+ صفقة جديدة</button>${seg([['all', 'الكل'], ['open', 'مفتوحة'], ['pending', 'معلقة'], ['closed', 'مغلقة']], ui.filter, 'filter')}${list ? '<div class="cards">' + list + '</div>' : '<div class="card mut">لا توجد صفقات.</div>'}`;
 }
 function dirHtml() {
   const q = (ui.q || '').trim(), pins = DIR.flatMap((s) => s[2]).filter((x) => S.pins.includes(x[0]));
@@ -260,10 +293,10 @@ const pages = {
   sessions: () => `<div class="card">${sessions()}</div><div class="mut">سوق الكريبتو يعمل على مدار الساعة. الجلسات تؤثر في السيولة والتذبذب فقط. بالتوقيت العالمي وتقريبية.</div>`,
   strategies() { const s = stats(); return s.byStr.length ? `<div class="card wrap"><table><tr><th>الاستراتيجية</th><th>صفقات</th><th>ربح%</th><th>R</th><th>$</th></tr>${s.byStr.map((x) => `<tr><td>${esc(x.k)}</td><td>${x.R.n}</td><td>${x.R.win == null ? '-' : f(x.R.win * 100, 0)}</td><td class="${cls(x.R.net)}">${f(x.R.net)}</td><td class="${cls(x.P.net)}">${f(x.P.net)}</td></tr>`).join('')}</table></div><div class="mut">سجّل اسم الاستراتيجية في كل صفقة لتظهر هنا.</div>` : '<div class="card mut">أغلق صفقات وسجّل لها استراتيجية لتظهر المقارنة.</div>'; },
   watch() { return `<div class="card"><div class="grid"><label>الرمز<input id="w-sym" value="BTCUSDT" autocapitalize="characters"></label><label>مستوى مهم<input id="w-lv" type="number" inputmode="decimal" step="any"></label></div><label style="margin-top:8px">ملاحظة<input id="w-note"></label><div class="err" id="w-err"></div><button class="p" data-a="wadd">إضافة للمتابعة</button></div>
-    ${S.watch.map((w) => `<div class="card"><div class="row"><b>${esc(w.symbol)}</b><button class="s" data-a="wdel" data-id="${w.id}">حذف</button></div><div class="mut">${w.level ? 'مستوى ' + f(w.level, 6) : ''} ${ui.prices && ui.prices[w.symbol] ? ' · السعر ' + f(ui.prices[w.symbol], 6) : ''} ${esc(w.note)}</div></div>`).join('') || '<div class="card mut">القائمة فارغة.</div>'}<div class="mut">السعر الحي بجانب كل عملة يظهر عند ربط الخادم.</div>`; },
+    ${S.watch.map((w) => `<div class="card"><div class="row"><b>${esc(w.symbol)}</b><button class="s" data-a="wdel" data-id="${w.id}">حذف</button></div><div class="mut">${w.level ? 'مستوى ' + f(w.level, 6) : ''} · السعر <b class="num" data-px="${w.symbol}">-</b> ${esc(w.note)}</div></div>`).join('') || '<div class="card mut">القائمة فارغة.</div>'}<div class="mut">الأسعار تتحدّث تلقائياً كل 5 ثوانٍ عند فتح الصفحة من الرابط العام.</div>`; },
   alerts() { return `<div class="card"><div class="grid"><label>الرمز<input id="al-sym" value="BTCUSDT" autocapitalize="characters"></label><label>السعر المستهدف<input id="al-lv" type="number" inputmode="decimal" step="any"></label></div>
     <label style="margin-top:8px">الاتجاه<select id="al-dir"><option value="up">عند الصعود إلى المستوى</option><option value="down">عند الهبوط إلى المستوى</option></select></label><div class="err" id="al-err"></div><button class="p" data-a="aladd">إضافة تنبيه</button></div>
-    ${S.alerts.map((a) => `<div class="card"><div class="row"><b>${esc(a.symbol)} ${a.dir === 'up' ? '↑' : '↓'} ${f(a.level, 6)} ${a.fired ? '<span class="tag up">أُطلق ✓</span>' : ''}</b><button class="s" data-a="aldel" data-id="${a.id}">حذف</button></div></div>`).join('') || '<div class="card mut">لا تنبيهات.</div>'}<div class="mut">${LIVE ? 'تُفحص الأسعار كل 20 ثانية والتطبيق مفتوح فقط، ولا تصلك تنبيهات وهو مغلق.' : 'تُحفظ هنا وتُفحص عند فتح التطبيق من الرابط العام.'}</div>`; },
+    ${S.alerts.map((a) => `<div class="card"><div class="row"><b>${esc(a.symbol)} ${a.dir === 'up' ? '↑' : '↓'} ${f(a.level, 6)} ${a.fired ? '<span class="tag up">أُطلق ✓</span>' : ''}</b><button class="s" data-a="aldel" data-id="${a.id}">حذف</button></div></div>`).join('') || '<div class="card mut">لا تنبيهات.</div>'}<div class="mut">${LIVE ? 'تُفحص الأسعار كل 5 ثوانٍ والتطبيق مفتوح فقط، ولا تصلك تنبيهات وهو مغلق.' : 'تُحفظ هنا وتُفحص عند فتح التطبيق من الرابط العام.'}</div>`; },
   conv() { const c = ui.c, v = c.ca > 0 && c.cp > 0 ? c.ca * c.cp : null; return `<div class="card"><div class="grid"><label>الكمية (عملة)<input data-c="ca" type="number" inputmode="decimal" value="${c.ca ?? ''}"></label><label>السعر (USDT)<input data-c="cp" type="number" inputmode="decimal" value="${c.cp ?? ''}"></label></div><div id="co7" style="margin-top:8px">${v == null ? '<span class="mut">أدخل الكمية والسعر.</span>' : row('القيمة', f(v) + ' USDT') + row('عكسياً: USDT لكل وحدة', f(1 / c.cp, 8))}</div></div><div class="mut">أدخل السعر بنفسك. السعر الحي يأتي مع الخادم.</div>`; },
   capital() { const dep = S.cap.reduce((a, x) => a + (x.type === 'dep' ? x.amt : -x.amt), 0), net = stats().P.net;
     return `<div class="grid">${[['رأس المال الصافي', f(dep) + ' $', ''], ['الرصيد الحالي', f(dep + net) + ' $', cls(net)], ['صافي الأداء', f(net) + ' $', cls(net)], ['العائد', dep > 0 ? f((net / dep) * 100) + '%' : '-', cls(net)]].map((x) => `<div class="card"><div class="mut">${x[0]}</div><div class="big ${x[2]}">${x[1]}</div></div>`).join('')}</div>
@@ -284,22 +317,27 @@ const pages = {
 const views = {
   home() {
     const h = new Date().getHours(), st = stats(), from = Date.now() - 7 * 864e5, wk = st.rows.filter((x) => (x.t.closedAt || 0) >= from), W = sum(wk.map((x) => x.r || 0)), top = st.byStr[0], best = st.rows.reduce((m, x) => Math.max(m, x.r || 0), 0);
-    const open = S.trades.filter((t) => t.status === 'open' && !t.paper).length, ideasOn = S.ideas.filter((i) => !CLOSED_I.includes(i.status)).length;
+    const opens = S.trades.filter((t) => t.status === 'open').sort((a, b) => b.openedAt - a.openedAt), ideasOn = S.ideas.filter((i) => !CLOSED_I.includes(i.status)).length;
+    const oi = (t) => `<div class="oi"><div class="row"><b>${esc(t.symbol)} <span class="tag ${t.side === 'long' ? 'up' : 'dn'}">${SIDE[t.side]}</span>${t.paper ? ' <span class="tag">افتراضي</span>' : ''}</b><span class="mut num">دخول ${f(t.entry, 6)} · وقف ${f(t.stop, 6)}</span></div><div class="live" data-lv="${t.id}">${liveHtml(t)}</div></div>`;
     return `<div class="row"><div><div class="mut">${h < 12 ? 'صباح الخير' : 'مساء الخير'}</div><b class="big">${esc(S.set.name || 'متداول')}</b></div><div class="av">${esc((S.set.name || 'م').slice(0, 2).toUpperCase())}</div></div>
-    <div style="height:10px"></div>${marketBlock()}
+    <div style="height:10px"></div><div class="cols"><div>
+    <div class="card"><div class="row"><b>الصفقات المفتوحة</b><span><span class="mut">العائم </span><span id="lv-total">${totalHtml()}</span></span></div>${opens.length ? opens.map(oi).join('') : '<div class="mut" style="margin-top:6px">لا صفقات مفتوحة.</div>'}</div>
+    ${marketBlock()}
+    </div><div>
     <div class="card hl"><b>هذا الأسبوع</b><p class="mut">أغلقت ${wk.length} صفقة هذا الأسبوع. اطلع على السجل الكامل ثم قارن بين استراتيجياتك.</p><button class="p" data-a="open" data-k="trades">اطلع على يومياتك ›</button><div class="mut" style="text-align:center;margin-top:8px;cursor:pointer" data-a="open" data-k="strat">قارن بين الاستراتيجيات</div></div>
     <div class="card"><b>أسبوعك</b><div class="grid g3" style="margin-top:8px"><div><div class="mut">نسبة الفوز</div><div class="big">${W.win == null ? '-' : f(W.win * 100, 0) + '%'}</div></div><div><div class="mut">الصفقات</div><div class="big">${W.n}</div></div><div><div class="mut">صافي R</div><div class="big ${cls(W.net)}">${f(W.net)}R</div></div></div></div>
     <h2>وصول سريع</h2><div class="grid g3" style="grid-template-columns:repeat(5,1fr);gap:6px">${[['trades', '✐', 'اليوميات'], ['alerts', '🔔', 'تنبيهات'], ['paper', '▣', 'افتراضي'], ['guard', '⛨', 'الحارس'], ['risk', '🎓', 'تعلّم']].map((x) => `<button class="s qa" data-a="open" data-k="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>
-    <h2 style="margin-top:14px">يحدث الآن</h2><div class="card">${row('🔥 سلسلة التسجيل اليومية', streak() + ' يوم')}${row('صفقات مفتوحة', open)}${row('أفكار نشطة', ideasOn)}</div>
+    <h2 style="margin-top:14px">يحدث الآن</h2><div class="card">${row('🔥 سلسلة التسجيل اليومية', streak() + ' يوم')}${row('صفقات مفتوحة', opens.filter((t) => !t.paper).length)}${row('أفكار نشطة', ideasOn)}</div>
     <h2>أداء دفترك</h2><div class="grid g3"><div class="card"><div class="mut">النمو</div><div class="big ${cls(st.P.net)}">${f((st.P.net / S.set.balance) * 100, 1)}%</div></div><div class="card"><div class="mut">أفضل صفقة</div><div class="big up">${f(best)}R</div></div><div class="card"><div class="mut">استراتيجيات</div><div class="big">${st.byStr.length}</div></div></div>
-    ${top ? `<div class="card"><div class="row"><b>أفضل استراتيجية</b><span class="${cls(top.P.net)} big">${f(top.P.net)} $</span></div><div class="mut">${esc(top.k)} · ${top.R.n} صفقة</div></div>` : ''}`;
+    ${top ? `<div class="card"><div class="row"><b>أفضل استراتيجية</b><span class="${cls(top.P.net)} big">${f(top.P.net)} $</span></div><div class="mut">${esc(top.k)} · ${top.R.n} صفقة</div></div>` : ''}
+    </div></div>`;
   },
   ideas() {
     const list = S.ideas.filter((i) => (ui.hist ? CLOSED_I.includes(i.status) : !CLOSED_I.includes(i.status))).sort((a, b) => b.at - a.at);
     return `<h2>أفكار التداول</h2><div class="mut">خطط تداول تسجّلها بنفسك مع نسبة العائد إلى المخاطرة وحالة كل فكرة.</div>
     <div class="seg"><button class="${ui.hist ? '' : 'on'}" data-a="ihist" data-k="">النشطة</button><button class="${ui.hist ? 'on' : ''}" data-a="ihist" data-k="1">السجل التاريخي</button></div>
     <button class="p" style="margin:0 0 10px" data-a="inew">+ فكرة جديدة</button><button class="s" style="width:100%;margin-bottom:10px" data-a="open" data-k="scanner">⌕ ماسح الفرص (RSI وEMA)</button>
-    ${list.map(ideaCard).join('') || `<div class="card mut">${ui.hist ? 'لا أفكار مغلقة بعد.' : 'لا أفكار نشطة. أضف فكرة وغيّر حالتها بنفسك. جرّب ماسح الفرص لاقتراح مسودات.'}</div>`}`;
+    ${list.length ? '<div class="cards">' + list.map(ideaCard).join('') + '</div>' : `<div class="card mut">${ui.hist ? 'لا أفكار مغلقة بعد.' : 'لا أفكار نشطة. أضف فكرة وغيّر حالتها بنفسك. جرّب ماسح الفرص لاقتراح مسودات.'}</div>`}`;
   },
   desk() { return `<h2>المكتب</h2><div class="mut">كل أدواتك في مكان واحد</div><input id="d-q" placeholder="ابحث عن الأدوات" value="${esc(ui.q || '')}" style="margin:8px 0"><div id="dir">${dirHtml()}</div>`; },
   ai() {
@@ -368,7 +406,7 @@ function statsHtml(paper = false) {
 let form = null;
 function sheetHtml(t) {
   const tps = (t.tps && t.tps.length ? t.tps : ['']).map((p) => `<input class="tp" type="number" inputmode="decimal" step="any" value="${p}">`).join('');
-  return `<h2>${t.id ? 'تعديل صفقة' : 'صفقة جديدة'}</h2><div class="grid">
+  return sheetTop(t.id ? 'تعديل صفقة' : 'صفقة جديدة') + `<div class="grid">
   <label>الزوج<input id="f-sym" value="${esc(t.symbol)}" list="pairs" autocapitalize="characters"></label>
   <label>الإطار الزمني<select id="f-tf">${['1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((x) => `<option ${x === t.tf ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
   <label>الاتجاه<select id="f-side"><option value="long" ${t.side === 'long' ? 'selected' : ''}>شراء Long</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>بيع Short</option></select></label>
@@ -404,7 +442,7 @@ function preview() {
 }
 function openSheet(t) {
   form = t || { symbol: 'BTCUSDT', tf: '1h', side: 'long', status: 'open', sizeMode: 'qty', tps: [], fees: 0, openedAt: Date.now() };
-  const s = $('#sheet'); s.innerHTML = sheetHtml(form); s.hidden = false; s.scrollTop = 0; preview();
+  const s = $('#sheet'); s.innerHTML = sheetHtml(form); showSheet(s); preview();
 }
 $('#sheet').addEventListener('input', () => form && preview());
 $('#sheet').addEventListener('change', () => form && preview());
@@ -422,7 +460,7 @@ const act = {
   save() { const t = readForm(), er = validate(t); if (er) { $('#f-err').textContent = er; return; }
     if (t.status === 'closed' && !t.closedAt) t.closedAt = Date.now();
     if (!t.id) { t.id = Date.now().toString(36); S.trades.unshift(t); } else S.trades = S.trades.map((x) => (x.id === t.id ? t : x));
-    persist(); act.cancel(); render(); },
+    persist(); closeSheet(() => render()); },
   close(d) { const v = num($('#x-' + d.id).value); if (!(v > 0)) return; S.trades = S.trades.map((t) => (t.id === d.id ? { ...t, exit: v, status: 'closed', closedAt: Date.now() } : t)); persist(); render(); },
   del(d) { if (ui.del === d.id) { S.trades = S.trades.filter((t) => t.id !== d.id); ui.del = null; persist(); } else ui.del = d.id; render(); },
   iadd() { const g = (i) => $('#' + i).value, t = { kind: 'idea', symbol: g('i-sym').trim().toUpperCase(), side: g('i-side'), entry: num(g('i-en')), stop: num(g('i-st')), tps: [num(g('i-t1')), num(g('i-t2'))].filter((x) => x > 0) };
@@ -434,7 +472,7 @@ const act = {
   theme(d) { S.set.theme = d.k; applyTheme(); persist(); render(); },
   async export() {
     try { const dl = typeof claude !== 'undefined' ? await claude.use('downloads') : null; if (dl) { await dl.save({ filename: 'trading-journal.json', data: JSON.stringify(S) }); return; } } catch (e) {}
-    $('#bk').value = JSON.stringify(S); },
+    const j = JSON.stringify(S); $('#bk').value = j; try { const a = document.createElement('a'); a.href = URL.createObjectURL(new Blob([j], { type: 'application/json' })); a.download = 'trading-journal.json'; document.body.appendChild(a); a.click(); a.remove(); } catch (e) {} },
   import() { try { const v = JSON.parse($('#bk').value); if (!v || !Array.isArray(v.trades)) throw 0; S = Object.assign({ trades: [], ideas: [], set: S.set }, v); persist(); render(); } catch (e) { $('#bk-err').textContent = 'نص غير صالح'; } },
   reset() { if (ui.del === 'all') { S.trades = []; S.ideas = []; ui.del = null; persist(); } else ui.del = 'all'; render(); },
   chip(d) { ask(d.k); },
@@ -477,14 +515,14 @@ Object.assign(ui.c, { cs: 1000, cr: 5, cm: 12, ca: '', cp: '' });
 const LIVE = typeof claude === 'undefined';
 const BN = 'https://api.binance.com', BF = 'https://fapi.binance.com';
 const DEFAULT_SYMS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT'];
-Object.assign(ui, { prices: {}, valid: null, live: 0, lastEval: 0, ch: { s: 'BTCUSDT', i: '1h' }, sc: { i: '1h' }, scan: {} });
+Object.assign(ui, { prices: {}, valid: null, live: 0, pmeta: {}, fail: {}, nf: {}, conn: { ok: false, src: null, t: 0 }, lastEval: 0, ch: { s: 'BTCUSDT', i: '1h' }, sc: { i: '1h' }, scan: {} });
 const jget = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error('http ' + r.status); return r.json(); };
 const symQ = (a) => encodeURIComponent(JSON.stringify(a));
 const kfmt = (x) => (x >= 1e6 ? f(x / 1e6, 2) + 'M' : x >= 1e3 ? f(x / 1e3, 1) + 'K' : f(x, 0));
 const okSym = (s) => /^[A-Z0-9]{3,20}$/.test(s);
 const needLive = () => '<div class="card mut">هذه الميزة تعمل عند فتح التطبيق من الرابط العام خارج Claude، لأن Claude يمنع الصفحة من الاتصال ببيانات Binance.</div>';
 function symList() {
-  return [...new Set([...DEFAULT_SYMS, ...S.watch.map((w) => w.symbol), ...S.alerts.filter((a) => !a.fired).map((a) => a.symbol), ...S.ideas.filter((i) => !CLOSED_I.includes(i.status)).map((i) => i.symbol), ...S.trades.filter((t) => t.status === 'open').map((t) => t.symbol)])].slice(0, 25);
+  return [...new Set([...S.trades.filter((t) => t.status !== 'closed').map((t) => t.symbol), ...S.ideas.filter((i) => !CLOSED_I.includes(i.status)).map((i) => i.symbol), ...S.alerts.filter((a) => !a.fired).map((a) => a.symbol), ...S.watch.map((w) => w.symbol), ...DEFAULT_SYMS])].filter(okSym);
 }
 // indicators (same maths as packages/shared)
 const ema = (v, n) => { const o = v.map(() => null); if (v.length < n) return o; const a = 2 / (n + 1); let p = v.slice(0, n).reduce((x, y) => x + y, 0) / n; o[n - 1] = p; for (let i = n; i < v.length; i++) { p = a * v[i] + (1 - a) * p; o[i] = p; } return o; };
@@ -496,7 +534,7 @@ function pivots(k, w = 5) {
   return { hs, ls };
 }
 const toK = (rows) => rows.map((r) => ({ t: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], ct: +r[6] }));
-const getK = async (s, i, n) => toK(await jget(`${BN}/api/v3/klines?symbol=${s}&interval=${i}&limit=${n}`));
+const getK = async (s, i, n) => klines(s, `interval=${i}&limit=${n}`);
 // idea lifecycle on closed candles (pessimistic: stop before targets; entry candle checks stop only)
 function stepIdea(i, c) {
   const long = i.side === 'long'; let s = { ...i }; if (s.cur == null) { s.cur = s.stop; s.tpi = 0; } let now = false;
@@ -525,9 +563,9 @@ function checkAlerts() {
 }
 async function evalIdeas() {
   let ch = false;
-  for (const i of S.ideas.filter((x) => !CLOSED_I.includes(x.status) && ui.valid && ui.valid.has(x.symbol))) {
+  for (const i of S.ideas.filter((x) => !CLOSED_I.includes(x.status) && okSym(x.symbol))) {
     try {
-      const from = Math.max(i.at, (i.last || 0) + 1), rows = toK(await jget(`${BN}/api/v3/klines?symbol=${i.symbol}&interval=1m&startTime=${from}&limit=1000`)).filter((c) => c.ct < Date.now());
+      const from = Math.max(i.at, (i.last || 0) + 1), rows = await klines(i.symbol, 'interval=1m&startTime=' + from + '&limit=1000').filter((c) => c.ct < Date.now());
       let cur = i;
       for (const c of rows) { if (CLOSED_I.includes(cur.status)) break; const nx = stepIdea(cur, c); nx.last = c.ct; if (nx.status !== cur.status) { notify(i.symbol + ': ' + ISTAT[cur.status] + ' ← ' + ISTAT[nx.status]); } cur = nx; }
       if (cur !== i) { S.ideas = S.ideas.map((x) => (x.id === i.id ? cur : x)); ch = true; }
@@ -535,32 +573,98 @@ async function evalIdeas() {
   }
   if (ch) { persist(); if (!ui.page && ui.tab === 'ideas' && $('#sheet').hidden) render(); }
 }
-async function tick(force) {
-  if (!LIVE) return;
-  try {
-    if (!ui.valid) { const all = await jget(BN + '/api/v3/ticker/price'); ui.valid = new Set(all.map((x) => x.symbol)); all.forEach((x) => { ui.prices[x.symbol] = +x.price; }); }
-    else { const s = symList().filter((x) => ui.valid.has(x)); if (s.length) (await jget(BN + '/api/v3/ticker/price?symbols=' + symQ(s))).forEach((x) => { ui.prices[x.symbol] = +x.price; }); }
-    ui.live = Date.now(); checkAlerts();
-    if (force || Date.now() - ui.lastEval > 60000) { ui.lastEval = Date.now(); await evalIdeas(); }
-    if (ui.tab === 'home' && !ui.page) await loadMarket();
-  } catch (e) { ui.live = 0; }
+const tmo = (u, ms = 6000) => { const c = new AbortController(), id = setTimeout(() => c.abort(), ms); return fetch(u, { signal: c.signal, cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).finally(() => clearTimeout(id)); };
+async function klines(s, qs) { let er; for (const b of [BN + '/api/v3/klines', 'https://data-api.binance.vision/api/v3/klines', BF + '/fapi/v1/klines']) { try { return toK(await tmo(b + '?symbol=' + s + '&' + qs, 8000)); } catch (e) { er = e; } } throw er; }
+// Price sources, tried in order. Each returns all prices at once, so one invalid symbol can never break the others.
+const bnp = (d) => d.map((x) => [x.symbol, +x.price]);
+const PX_SRC = [
+  ['Binance Futures', BF + '/fapi/v1/ticker/price', bnp],
+  ['Binance Spot', BN + '/api/v3/ticker/price', bnp],
+  ['Binance Vision', 'https://data-api.binance.vision/api/v3/ticker/price', bnp],
+  ['Bybit Futures', 'https://api.bybit.com/v5/market/tickers?category=linear', (d) => d.result.list.map((x) => [x.symbol, +x.lastPrice])],
+  ['Bybit Spot', 'https://api.bybit.com/v5/market/tickers?category=spot', (d) => d.result.list.map((x) => [x.symbol, +x.lastPrice])],
+  ['Gate Futures', 'https://api.gateio.ws/api/v4/futures/usdt/tickers', (d) => d.map((x) => [String(x.contract).replace('_', ''), +x.last])],
+];
+try { Object.entries(JSON.parse(localStorage.getItem('tic_px') || '{}')).forEach(([s, m]) => { if (m && m.p > 0) { ui.prices[s] = m.p; ui.pmeta[s] = { t: m.t, src: m.src }; ui.conn.t = Math.max(ui.conn.t, m.t); } }); } catch (e) {}
+async function fetchPrices() {
+  const now = Date.now(), want = symList().filter((s) => !(ui.nf[s] && now - ui.nf[s] < 300000)), need = new Set(want);
+  const cand = PX_SRC.map((_, i) => i).filter((i) => (ui.fail[i] || 0) < now - 30000), all = cand.length === PX_SRC.length, list = cand.length ? cand : PX_SRC.map((_, i) => i);
+  let ok = false, used = null;
+  for (const i of list) {
+    if (!need.size) break;
+    try {
+      const m = new Map(PX_SRC[i][2](await tmo(PX_SRC[i][1]))); ok = true; ui.fail[i] = 0; used = used || PX_SRC[i][0];
+      [...need].forEach((s) => { const p = m.get(s); if (p > 0) { ui.prices[s] = p; ui.pmeta[s] = { t: Date.now(), src: PX_SRC[i][0] }; need.delete(s); } });
+    } catch (e) { ui.fail[i] = Date.now(); }
+  }
+  if (ok && all) need.forEach((s) => { ui.nf[s] = now; });
+  if (ok) {
+    ui.conn = { ok: true, src: used, t: Date.now() };
+    try { const o = {}; Object.keys(ui.prices).forEach((s) => { if (ui.pmeta[s]) o[s] = { p: ui.prices[s], t: ui.pmeta[s].t, src: ui.pmeta[s].src }; }); localStorage.setItem('tic_px', JSON.stringify(o)); } catch (e) {}
+  } else ui.conn.ok = false;
+  return ok;
 }
+async function tick(force) {
+  if (!LIVE || ui.ticking) return; ui.ticking = true;
+  try {
+    if (await fetchPrices()) checkAlerts();
+    if (force || Date.now() - ui.lastEval > 60000) { ui.lastEval = Date.now(); evalIdeas(); }
+    if (ui.tab === 'home' && !ui.page) loadMarket();
+  } catch (e) {} finally { ui.ticking = false; updateLive(); }
+}
+// ---- live P/L ----
+const hms = (ts) => new Date(ts).toLocaleTimeString('en-GB');
+const sg = (x) => (x > 0 ? '+' : '');
+const stc = (a, b, k) => `<div class="stc"><span>${a}</span><b class="num ${k || ''}">${b}</b></div>`;
+function liveHtml(t) {
+  if (!LIVE) return '<div class="mut">السعر المباشر يعمل عند فتح الصفحة من الرابط العام.</div>';
+  const p = ui.prices[t.symbol], m = ui.pmeta[t.symbol];
+  if (!(p > 0)) return `<div class="mut">جارٍ جلب السعر... ${ui.conn.ok || !ui.conn.t ? '' : '<span class="dn">تعذر الاتصال بمصادر الأسعار</span>'}</div>`;
+  const stale = !m || Date.now() - m.t > 20000, meta = `<div class="mut" style="margin-top:6px;font-size:12px">${stale ? '<span class="warn">آخر سعر معروف</span>' : '<span class="up">● مباشر</span>'}${m ? ' · ' + esc(m.src) + ' · ' + hms(m.t) : ''}</div>`;
+  if (t.status !== 'open') { const dist = t.entry > 0 ? ((p - t.entry) / t.entry) * 100 : null; return `<div class="lg">${stc('السعر الحالي', f(p, 6))}${stc('المسافة للدخول', sg(dist) + f(dist, 2) + '%')}</div>` + meta; }
+  const c = calc(t), d = dir(t), diff = d * (p - t.entry), pnl = diff * c.qty - (t.fees || 0), pct = c.usd > 0 ? (pnl / c.usd) * 100 : null, r = c.risk > 0 ? pnl / c.risk : null, k = cls(pnl), hit = d > 0 ? p <= t.stop : p >= t.stop;
+  return `<div class="lg">${stc('السعر الحالي', f(p, 6))}${stc('فرق السعر', sg(diff) + f(diff, 6), cls(diff))}${stc('الربح / الخسارة', sg(pnl) + f(pnl) + ' $', k)}${stc('النسبة %', sg(pct) + f(pct, 2) + '%', k)}${stc('مضاعف R', sg(r) + f(r, 2) + 'R', k)}</div>` + (hit ? '<div class="err">السعر عند وقف الخسارة أو تجاوزه.</div>' : '') + meta;
+}
+function totalHtml() {
+  const rows = S.trades.filter((t) => t.status === 'open' && !t.paper && ui.prices[t.symbol] > 0); if (!rows.length) return '<span class="mut">-</span>';
+  let P = 0, R = 0; rows.forEach((t) => { const c = calc(t), x = dir(t) * (ui.prices[t.symbol] - t.entry) * c.qty - (t.fees || 0); P += x; R += c.risk ? x / c.risk : 0; });
+  return `<b class="num ${cls(P)}">${sg(P)}${f(P)} $ · ${sg(R)}${f(R, 2)}R</b>`;
+}
+function connInfo() {
+  if (!LIVE) return ['mut', 'الأسعار غير متاحة هنا'];
+  const c = ui.conn, age = c.t ? Date.now() - c.t : Infinity;
+  if (c.ok && age < 15000) return ['up', '● مباشر · ' + c.src + ' · تحديث كل 5 ث'];
+  if (c.t) return ['warn', '◐ آخر سعر معروف ' + hms(c.t)];
+  return ['dn', '○ لا اتصال بالأسعار'];
+}
+function updateLive() {
+  const [k, tx] = connInfo(); $$('[data-conn]').forEach((e) => { e.className = 'tag conn ' + k; e.textContent = tx; });
+  $$('[data-lv]').forEach((e) => { const t = S.trades.find((x) => x.id === e.dataset.lv); if (t) e.innerHTML = liveHtml(t); });
+  $$('[data-px]').forEach((e) => { const p = ui.prices[e.dataset.px]; e.textContent = p > 0 ? f(p, 6) : '-'; });
+  const tot = $('#lv-total'); if (tot) tot.innerHTML = totalHtml();
+}
+// ---- market block ----
 function marketBlock() {
   if (!LIVE) return '<div class="card"><div class="row"><b>الأسعار وخريطة السوق والمعنويات</b><span class="tag">غير متاح هنا</span></div><p class="mut">تظهر هذه الأقسام عند فتح التطبيق من الرابط العام خارج Claude. لا أعرض أرقاماً ثابتة أو مختلقة.</p></div>';
-  return `<div class="card"><div class="row"><b>الأسعار المباشرة</b><span class="tag up">● مباشر</span></div><div id="mk-tick" class="mut">جارٍ التحميل...</div></div><div class="card"><b>خريطة السوق (تغير 24 ساعة)</b><div id="mk-heat" class="grid g3" style="margin-top:8px"></div></div><div class="card"><b>معنويات السوق (حسابات العقود)</b><div id="mk-sent" class="mut">جارٍ التحميل...</div></div>`;
+  return `<div class="card"><div class="row"><b>الأسعار المباشرة</b><span class="tag conn" data-conn></span></div><div id="mk-tick" class="mut">جارٍ التحميل...</div></div><div class="card"><b>خريطة السوق (تغير 24 ساعة)</b><div id="mk-heat" class="grid g3" style="margin-top:8px"></div></div><div class="card"><b>معنويات السوق (حسابات العقود)</b><div id="mk-sent" class="mut">جارٍ التحميل...</div></div>`;
+}
+function paintMarket(d) {
+  if (!$('#mk-tick')) return;
+  const t = d.tk || DEFAULT_SYMS.filter((s) => ui.prices[s] > 0).map((s) => ({ s, p: ui.prices[s], c: null }));
+  $('#mk-tick').innerHTML = t.length ? t.map((x) => row(esc(x.s), '<span class="num">' + f(x.p, 6) + '</span>' + (x.c == null ? '' : ' <span class="num ' + cls(x.c) + '">' + f(x.c) + '%</span>'))).join('') : 'تعذر تحميل البيانات. قد يكون Binance محجوباً في منطقتك.';
+  $('#mk-heat').innerHTML = t.filter((x) => x.c != null).sort((a, b) => b.c - a.c).map((x) => `<div class="card" style="margin:0;text-align:center"><b>${esc(x.s.replace('USDT', ''))}</b><div class="num ${cls(x.c)}">${f(x.c)}%</div></div>`).join('');
+  $('#mk-sent').innerHTML = d.se || 'لا توجد بيانات.';
 }
 async function loadMarket() {
   if (!LIVE || !$('#mk-tick')) return;
+  if (ui.mk && Date.now() - ui.mk.t < 30000) { paintMarket(ui.mk); return; }
+  const d = { t: Date.now() };
+  try { let raw; for (const b of [BN + '/api/v3/', 'https://data-api.binance.vision/api/v3/']) { try { raw = await tmo(b + 'ticker/24hr?symbols=' + symQ(DEFAULT_SYMS)); break; } catch (e) {} } if (raw) d.tk = raw.map((x) => ({ s: x.symbol, p: +x.lastPrice, c: +x.priceChangePercent })); } catch (e) {}
   try {
-    const t = (await jget(BN + '/api/v3/ticker/24hr?symbols=' + symQ(DEFAULT_SYMS))).map((x) => ({ s: x.symbol, p: +x.lastPrice, c: +x.priceChangePercent }));
-    $('#mk-tick').innerHTML = t.map((x) => row(esc(x.s), f(x.p, 6) + ' <span class="' + cls(x.c) + '">' + f(x.c) + '%</span>')).join('');
-    $('#mk-heat').innerHTML = t.slice().sort((a, b) => b.c - a.c).map((x) => `<div class="card" style="margin:0;text-align:center"><b>${esc(x.s.replace('USDT', ''))}</b><div class="${cls(x.c)}">${f(x.c)}%</div></div>`).join('');
-  } catch (e) { const m = $('#mk-tick'); if (m) m.textContent = 'تعذر تحميل البيانات. قد يكون Binance محجوباً في منطقتك.'; }
-  try {
-    const r = await Promise.allSettled(['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((s) => jget(`${BF}/futures/data/globalLongShortAccountRatio?symbol=${s}&period=5m&limit=1`).then((d) => ({ s, l: +d[0].longAccount * 100, sh: +d[0].shortAccount * 100 }))));
-    const ok = r.filter((x) => x.status === 'fulfilled').map((x) => x.value);
-    $('#mk-sent').innerHTML = ok.map((x) => `<div style="margin-top:8px"><div class="row"><b>${esc(x.s)}</b><span class="up">شراء ${f(x.l, 0)}%</span><span class="dn">بيع ${f(x.sh, 0)}%</span></div><div class="bar"><i style="width:${x.l}%"></i></div></div>`).join('') || 'لا توجد بيانات.';
+    const r = await Promise.allSettled(['BTCUSDT', 'ETHUSDT', 'SOLUSDT'].map((s) => tmo(`${BF}/futures/data/globalLongShortAccountRatio?symbol=${s}&period=5m&limit=1`).then((x) => ({ s, l: +x[0].longAccount * 100, sh: +x[0].shortAccount * 100 }))));
+    d.se = r.filter((x) => x.status === 'fulfilled').map((x) => x.value).map((x) => `<div style="margin-top:8px"><div class="row"><b>${esc(x.s)}</b><span class="up">شراء ${f(x.l, 0)}%</span><span class="dn">بيع ${f(x.sh, 0)}%</span></div><div class="bar"><i style="width:${x.l}%"></i></div></div>`).join('');
   } catch (e) {}
+  ui.mk = d; paintMarket(d);
 }
 function chartSvg(k) {
   const n = k.length, W = 300, H = 150, hi = Math.max(...k.map((x) => x.h)), lo = Math.min(...k.map((x) => x.l)), y = (v) => 4 + ((hi - v) / (hi - lo || 1)) * (H - 8), cw = W / n;
@@ -612,7 +716,7 @@ Object.assign(act, {
   async notif() { if (!('Notification' in window)) { notify('المتصفح لا يدعم الإشعارات'); return; } const p = await Notification.requestPermission(); notify(p === 'granted' ? 'تم تفعيل الإشعارات' : 'لم يتم السماح'); },
 });
 function installCard() {
-  return LIVE ? `<div class="card"><b>تثبيت التطبيق</b><p class="mut">أندرويد: قائمة المتصفح ⋮ ثم «تثبيت التطبيق». آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</p><div class="row"><button class="s" data-a="install">تثبيت</button><button class="s" data-a="notif">تفعيل الإشعارات</button></div><div class="mut">التنبيهات تُفحص كل 20 ثانية والتطبيق مفتوح فقط.</div></div>` : '';
+  return LIVE ? `<div class="card"><b>تثبيت التطبيق</b><p class="mut">أندرويد: قائمة المتصفح ⋮ ثم «تثبيت التطبيق». آيفون: زر المشاركة ثم «إضافة إلى الشاشة الرئيسية».</p><div class="row"><button class="s" data-a="install">تثبيت</button><button class="s" data-a="notif">تفعيل الإشعارات</button></div><div class="mut">التنبيهات تُفحص كل 5 ثوانٍ والتطبيق مفتوح فقط.</div></div>` : '';
 }
 function localAdvice() {
   const s = stats(), L = [];
@@ -642,7 +746,7 @@ function openIdea(i) {
   const t = i || { symbol: 'BTCUSDT', tf: '1h', side: 'long', sizeMode: 'qty', tps: [] };
   const tps = (t.tps && t.tps.length ? t.tps : ['', '']).map((p) => `<input class="tp" type="number" inputmode="decimal" step="any" value="${p}">`).join('');
   const s = $('#sheet');
-  s.innerHTML = `<h2>${i ? 'تعديل فكرة' : 'فكرة جديدة'}</h2><div class="grid">
+  s.innerHTML = sheetTop(i ? 'تعديل فكرة' : 'فكرة جديدة') + `<div class="grid">
   <label>الزوج<input id="i-sym" value="${esc(t.symbol)}" list="pairs" autocapitalize="characters"></label>
   <label>الإطار الزمني<select id="i-tf">${['1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((x) => `<option ${x === t.tf ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
   <label>الاتجاه<select id="i-side"><option value="long" ${t.side === 'long' ? 'selected' : ''}>شراء Long</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>بيع Short</option></select></label><span></span>
@@ -656,7 +760,7 @@ function openIdea(i) {
   <label style="margin-top:8px">ملاحظة<input id="i-note" value="${esc(t.note)}"></label>
   <div class="card" id="i-prev" style="margin-top:10px"></div><div class="err" id="i-err"></div>
   <div class="row"><button class="p" data-a="isave">حفظ الفكرة</button><button class="s" style="margin-top:10px" data-a="cancel">إلغاء</button></div>`;
-  s.hidden = false; s.scrollTop = 0; ideaPrev();
+  showSheet(s); ideaPrev();
 }
 function ideaPrev() {
   const g = (i) => { const e = $('#' + i); return e ? e.value : ''; }, e = $('#i-prev'); if (!e) return;
@@ -686,7 +790,7 @@ Object.assign(act, {
     t.qty = sz > 0 ? (mode === 'qty' ? sz : sz / en) : 0; t.usd = sz > 0 ? (mode === 'usd' ? sz : sz * en) : 0;
     const er = validate(t); if (er) { $('#i-err').textContent = er; return; }
     if (ui.ideaForm && ui.ideaForm.id) S.ideas = S.ideas.map((i) => (i.id === ui.ideaForm.id ? { ...i, ...t } : i)); else S.ideas.unshift({ ...t, id: nid(), status: 'pending', at: Date.now() });
-    persist(); act.cancel(); ui.tab = 'ideas'; ui.page = null; render();
+    persist(); closeSheet(() => go(() => { ui.tab = 'ideas'; ui.page = null; }, false));
   },
   itotrade(d) {
     const i = S.ideas.find((x) => x.id === d.id); if (!i) return;
@@ -713,17 +817,53 @@ document.addEventListener('change', (e) => { if (e.target.dataset && e.target.da
 function render() {
   ensure();
   $('#nav').innerHTML = TABS.map(([k, t, i]) => `<button class="${k === ui.tab && !ui.page ? 'on' : ''}" data-a="tab" data-k="${k}"><b>${i}</b>${t}</button>`).join('');
-  const v = $('#v');
-  if (ui.page) {
-    v.innerHTML = `<div class="row"><button class="s" data-a="back">→ رجوع</button><h2 style="margin:0">${PT[ui.page] || 'قريباً'}</h2><span></span></div><div style="height:10px"></div>` + (pages[ui.page] ? pages[ui.page]() : '');
-    if (ui.page === 'calc') calcOut();
-    if (ui.page === 'charts') act.chload(); if (ui.page === 'liq') act.liqload(); if (ui.page === 'scanner') act.scan();
-  } else v.innerHTML = views[ui.tab]();
+  const y = window.scrollY, v = $('#v'), ttl = ui.page ? (PT[ui.page] || 'قريباً') : (TABS.find((x) => x[0] === ui.tab) || [0, ''])[1];
+  $('#top').innerHTML = `<div class="in">${ui.page ? '<button class="s back" data-a="back" aria-label="رجوع">→ رجوع</button>' : ''}<h1>${ttl}</h1><span class="tag conn" data-conn></span></div>`;
+  v.className = ui.page ? 'pg' : 't-' + ui.tab;
+  v.innerHTML = ui.page ? (pages[ui.page] ? pages[ui.page]() : '') : views[ui.tab]();
+  if (ui.page === 'calc') calcOut();
+  if (ui.page === 'charts') act.chload(); if (ui.page === 'liq') act.liqload(); if (ui.page === 'scanner') act.scan();
   if (ui.tab === 'home' && !ui.page) loadMarket();
+  updateLive(); window.scrollTo(0, y);
 }
 applyTheme(); render();
-if (LIVE) { tick(true); setInterval(() => { if (document.visibilityState === 'visible') tick(); }, 20000); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(true); }); }
+if (LIVE) { tick(true); setInterval(() => { if (document.visibilityState === 'visible') tick(); }, 5000); addEventListener('online', () => tick(true)); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(true); }); }
 setInterval(() => { if (ui.tab === 'home' && !ui.page && $('#sheet').hidden) render(); }, 60000);
+// ---------- navigation: browser history + per-screen scroll memory ----------
+const scrollMap = {}; let pend = null;
+try { history.scrollRestoration = 'manual'; } catch (e) {}
+const snap = () => ({ t: ui.tab, p: ui.page, s: ui.soon });
+const stKey = (s) => (s && s.p ? 'p:' + s.p + (s.p === 'soon' ? s.s : '') : 't:' + ((s && s.t) || 'home'));
+const curKey = () => stKey(snap());
+const sheetTop = (t) => `<div class="sbar"><button class="s back" data-a="cancel" aria-label="رجوع">→ رجوع</button><h1>${t}</h1></div>`;
+function go(mut, top) {
+  scrollMap[curKey()] = window.scrollY; mut();
+  const st = snap(); if (stKey(history.state) !== stKey(st)) history.pushState(st, '');
+  render(); window.scrollTo(0, top ? 0 : (scrollMap[curKey()] || 0));
+}
+function showSheet(s) { if (s.hidden) history.pushState({ ...snap(), sh: 1 }, ''); s.hidden = false; s.scrollTop = 0; }
+function closeSheet(after) {
+  const s = $('#sheet'), was = !s.hidden; form = null; ui.ideaForm = null; s.hidden = true;
+  if (was && history.state && history.state.sh) { pend = after || null; history.back(); } else if (after) after();
+}
+addEventListener('popstate', (e) => {
+  const st = e.state || { t: 'home', p: null, s: null }, s = $('#sheet'), fn = pend; pend = null;
+  if (!s.hidden) { form = null; ui.ideaForm = null; s.hidden = true; }
+  if (stKey(st) !== curKey()) { scrollMap[curKey()] = window.scrollY; ui.tab = st.t; ui.page = st.p; ui.soon = st.s; render(); window.scrollTo(0, scrollMap[curKey()] || 0); }
+  else if (!fn) render();
+  if (fn) fn();
+});
+history.replaceState(snap(), '');
+setInterval(updateLive, 2000);
+Object.assign(act, {
+  tab(d) { if (!ui.page && ui.tab === d.k) { window.scrollTo({ top: 0, behavior: 'smooth' }); return; } go(() => { ui.tab = d.k; ui.page = null; ui.del = null; }, false); },
+  back() { if (history.state && history.state.p) history.back(); else go(() => { ui.page = null; }, false); },
+  open(d) {
+    const it = DIR.flatMap((s) => s[2]).find((x) => x[0] === d.k), tg = it ? it[4] : 'page:' + d.k, [kind, id] = tg.split(':');
+    go(() => { if (kind === 'tab') { ui.tab = id; ui.page = null; } else if (kind === 'soon') { ui.page = 'soon'; ui.soon = id; } else ui.page = id; ui.filter = 'all'; }, kind !== 'tab');
+  },
+  cancel() { closeSheet(); },
+});
 </script>
 <script>if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});window.addEventListener('beforeinstallprompt',function(e){e.preventDefault();window.__inst=e;});</script>
 </body>
