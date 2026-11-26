@@ -1,0 +1,562 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>دفتر صفقات الكريبتو</title>
+<style>
+:root{color-scheme:light dark;--bg:#f3f6f9;--card:#fff;--tx:#0f1b2a;--mut:#5b6b7c;--ac:#1f6fd6;--up:#0f8f58;--dn:#d02f47;--bd:#dce3ea;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg:#0b1624;--card:#122338;--tx:#e8eef5;--mut:#8da0b5;--ac:#4aa3ff;--up:#2ecc8f;--dn:#ff6b7f;--bd:#1f3550}}
+:root[data-theme="dark"]{color-scheme:dark;--bg:#0b1624;--card:#122338;--tx:#e8eef5;--mut:#8da0b5;--ac:#4aa3ff;--up:#2ecc8f;--dn:#ff6b7f;--bd:#1f3550}
+*{box-sizing:border-box}html,body{margin:0}
+body{background:var(--bg);color:var(--tx);font:15px/1.5 system-ui,-apple-system,"Segoe UI",Tahoma,sans-serif;max-width:640px;margin:auto;padding:12px 12px 84px}
+h2{font-size:17px;margin:4px 0 10px}
+.card{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:10px}
+.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.g3{grid-template-columns:1fr 1fr 1fr}
+label{display:block;font-size:12px;color:var(--mut)}
+input,select,textarea{width:100%;padding:9px;margin-top:3px;border:1px solid var(--bd);border-radius:8px;background:var(--bg);color:var(--tx);font:inherit}
+textarea{resize:vertical}
+button{font:inherit;color:var(--tx)}
+.p{width:100%;margin-top:10px;padding:11px;border:0;border-radius:10px;background:var(--ac);color:#fff}
+.s{padding:7px 10px;border:1px solid var(--bd);border-radius:8px;background:transparent}
+.seg{display:flex;gap:6px;margin:8px 0;flex-wrap:wrap}
+.seg button{flex:1;padding:8px;border:1px solid var(--bd);background:var(--card);border-radius:10px;white-space:nowrap}
+.seg button.on{background:var(--ac);color:#fff;border-color:var(--ac)}
+.row{display:flex;justify-content:space-between;align-items:center;gap:8px}
+.up{color:var(--up)}.dn{color:var(--dn)}.mut{color:var(--mut);font-size:13px}
+.big{font-size:19px;font-weight:600}
+.err{color:var(--dn);font-size:13px;min-height:18px}
+.tag{font-size:12px;padding:2px 8px;border-radius:99px;border:1px solid var(--bd)}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--card);border-top:1px solid var(--bd);padding:6px 4px calc(6px + env(safe-area-inset-bottom,0px));z-index:5}
+nav button{flex:1;border:0;background:none;font-size:11px;color:var(--mut);padding:4px 0}
+nav button.on{color:var(--ac);font-weight:600}nav b{display:block;font-size:19px;line-height:1.2}
+.sheet{position:fixed;inset:0;background:var(--bg);overflow:auto;z-index:10;padding:calc(12px + env(safe-area-inset-top,0px)) 12px 40px}
+table{width:100%;border-collapse:collapse;font-size:13px}th,td{padding:6px 4px;text-align:start;border-bottom:1px solid var(--bd)}
+.wrap{overflow-x:auto}svg{width:100%;height:120px}
+.chat{min-height:160px}.b{padding:8px 10px;border-radius:12px;margin:6px 0;white-space:pre-wrap;max-width:92%}
+.b.u{background:var(--ac);color:#fff;margin-inline-start:auto}.b.a{background:var(--card);border:1px solid var(--bd)}
+[hidden]{display:none!important}
+.av{width:44px;height:44px;border-radius:12px;background:var(--ac);color:#fff;display:grid;place-items:center;font-weight:700}
+.hl{border-color:var(--ac)}
+.li{display:flex;gap:10px;align-items:center;padding:9px 2px;border-bottom:1px solid var(--bd)}.li:last-child{border-bottom:0}
+.ic{width:34px;height:34px;border-radius:10px;background:var(--bg);display:grid;place-items:center;font-size:16px}
+.rbox{min-width:64px;text-align:center;padding:8px;border:1px solid var(--bd);border-radius:10px;background:var(--bg)}.rbox b{font-size:18px;display:block}
+.idea.up{border-inline-start:4px solid var(--up)}.idea.dn{border-inline-start:4px solid var(--dn)}.idea.ac{border-inline-start:4px solid var(--ac)}
+.ac{color:var(--ac)}
+.bar{height:8px;border-radius:99px;background:var(--dn);overflow:hidden}.bar i{display:block;height:100%;background:var(--up)}
+.bar.risk{background:var(--bd)}.bar.risk i{background:var(--dn)}.bar.risk.good i{background:var(--up)}
+.qa{display:flex;flex-direction:column;align-items:center;gap:2px;font-size:11px;padding:8px 2px}.qa b{font-size:18px}
+</style>
+</head>
+<body>
+<main id="v"></main>
+<nav id="nav"></nav>
+<div id="sheet" class="sheet" hidden></div>
+<script>
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const f = (x, d = 2) => (x == null || !isFinite(x) ? '-' : Number(x).toLocaleString('en', { maximumFractionDigits: d }));
+const cls = (x) => (x > 0 ? 'up' : x < 0 ? 'dn' : '');
+const esc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const num = (v) => (v === '' || v == null ? NaN : parseFloat(v));
+const SIDE = { long: 'شراء', short: 'بيع' };
+const STAT = { pending: 'معلقة', open: 'مفتوحة', closed: 'مغلقة' };
+const ISTAT = { pending: 'معلقة', active: 'نشطة', trailing: 'وقف متحرك', target: 'تحقق الهدف', stopped: 'ضرب الوقف', expired: 'انتهت' };
+
+// ---------- state & persistence ----------
+let S = { trades: [], ideas: [], set: { theme: 'auto', balance: 1000 } };
+try { const l = JSON.parse(localStorage.getItem('tic_s') || '{}'); S = Object.assign(S, l); } catch (e) {}
+let dbDoc = null, timer = null, synced = false;
+function persist() {
+  try { localStorage.setItem('tic_s', JSON.stringify(S)); } catch (e) {}
+  clearTimeout(timer);
+  timer = setTimeout(() => { if (dbDoc) dbDoc.set({ json: JSON.stringify(S) }).catch(() => {}); }, 700);
+}
+(async () => {
+  try {
+    if (typeof claude === 'undefined') return;
+    const [db, user] = await Promise.all([claude.use('db'), claude.use('user')]);
+    if (!db || !user) return;
+    dbDoc = db.doc('data/users/' + (await user.id()) + '/journal');
+    const snap = await dbDoc.get();
+    if (snap.exists) { S = Object.assign({ trades: [], ideas: [], set: S.set }, JSON.parse(snap.data().json)); try { localStorage.setItem('tic_s', JSON.stringify(S)); } catch (e) {} }
+    else if (S.trades.length || S.ideas.length) persist();
+    synced = true; applyTheme(); render();
+  } catch (e) {}
+})();
+
+// ---------- calculations ----------
+const dir = (t) => (t.side === 'long' ? 1 : -1);
+function calc(t) {
+  const qty = t.sizeMode === 'usd' ? t.usd / t.entry : t.qty, usd = qty * t.entry, dist = Math.abs(t.entry - t.stop), risk = dist * qty;
+  const rrs = (t.tps || []).map((p) => Math.abs(p - t.entry) / dist);
+  let pnl = null, r = null;
+  if (t.exit != null) { pnl = dir(t) * (t.exit - t.entry) * qty - (t.fees || 0); r = risk ? pnl / risk : null; }
+  return { qty, usd, risk, rrs, pnl, r };
+}
+function validate(t) {
+  if (!/^[A-Z0-9]{3,20}$/.test(t.symbol)) return 'رمز غير صالح، مثال: BTCUSDT';
+  if (!(t.entry > 0 && t.stop > 0)) return 'أدخل سعر الدخول ووقف الخسارة';
+  if (t.side === 'long' ? t.stop >= t.entry : t.stop <= t.entry) return 'وقف الخسارة يجب أن يكون تحت الدخول للشراء وفوقه للبيع';
+  if ((t.tps || []).some((p) => (t.side === 'long' ? p <= t.entry : p >= t.entry))) return 'الأهداف يجب أن تكون في اتجاه الربح';
+  if (t.kind !== 'idea') {
+    if (!((t.sizeMode === 'usd' ? t.usd : t.qty) > 0)) return 'أدخل حجم الصفقة';
+    if (t.status === 'closed' && !(t.exit > 0)) return 'أدخل سعر الخروج للصفقة المغلقة';
+  }
+  return '';
+}
+function sum(vals) {
+  const w = vals.filter((x) => x > 0), l = vals.filter((x) => x < 0), gw = w.reduce((a, b) => a + b, 0), gl = -l.reduce((a, b) => a + b, 0);
+  let eq = 0, pk = 0, dd = 0; const curve = [0];
+  vals.forEach((x) => { eq += x; curve.push(eq); pk = Math.max(pk, eq); dd = Math.max(dd, pk - eq); });
+  return { n: vals.length, win: w.length + l.length ? w.length / (w.length + l.length) : null, exp: vals.length ? eq / vals.length : null, pf: gl ? gw / gl : null, net: eq, dd, curve };
+}
+function stats(paper = false) {
+  const rows = S.trades.filter((t) => !!t.paper === paper && t.status === 'closed' && t.exit != null).sort((a, b) => (a.closedAt || 0) - (b.closedAt || 0)).map((t) => ({ t, ...calc(t) }));
+  const by = (key) => { const m = {}; rows.forEach((x) => { (m[x.t[key] || 'بدون'] = m[x.t[key] || 'بدون'] || []).push(x); }); return Object.entries(m).map(([k, a]) => ({ k, R: sum(a.map((x) => x.r || 0)), P: sum(a.map((x) => x.pnl)) })).sort((a, b) => b.P.net - a.P.net); };
+  return { rows, R: sum(rows.map((x) => x.r || 0)), P: sum(rows.map((x) => x.pnl)), bySym: by('symbol'), byStr: by('strategy') };
+}
+const curve = (pts) => {
+  const mx = Math.max(...pts, 1), mn = Math.min(...pts, -1);
+  return `<svg viewBox="0 0 300 100" preserveAspectRatio="none"><polyline fill="none" stroke="var(--ac)" stroke-width="2" points="${pts.map((v, i) => `${(i / Math.max(pts.length - 1, 1)) * 300},${95 - ((v - mn) / (mx - mn)) * 90}`).join(' ')}"/></svg>`;
+};
+function sessions() {
+  const h = new Date().getUTCHours() + new Date().getUTCMinutes() / 60;
+  const S3 = [['آسيا', 0, 9], ['لندن', 7, 16], ['نيويورك', 12, 21]];
+  return S3.map(([n, a, b]) => { const on = h >= a && h < b; return `<div class="row"><span>${n}</span><span class="mut">${String(a).padStart(2, '0')}:00 إلى ${String(b).padStart(2, '0')}:00 UTC</span><span class="tag ${on ? 'up' : ''}">${on ? 'مفتوحة' : 'مغلقة'}</span></div>`; }).join('');
+}
+
+// ---------- UI state ----------
+const ui = { tab: 'home', sub: 'trades', filter: 'all', del: null, chat: [], busy: false, c: { bal: 1000, risk: 1, entry: '', stop: '', fee: 0.05, lev: 5, mode: 'qty', size: '', tgt: '', dd: 20 } };
+const TABS = [['home', 'الرئيسية', '⌂'], ['ideas', 'الأفكار', '✦'], ['desk', 'المكتب', '▤'], ['ai', 'المستشار', '◉'], ['me', 'الملف', '☺']];
+function applyTheme() { const r = document.documentElement; if (S.set.theme === 'auto') r.removeAttribute('data-theme'); else r.setAttribute('data-theme', S.set.theme); }
+const seg = (items, cur, act) => `<div class="seg">${items.map(([k, t]) => `<button class="${k === cur ? 'on' : ''}" data-a="${act}" data-k="${k}">${t}</button>`).join('')}</div>`;
+
+const DIR = [
+  ['خطط صفقة', 'أفكار التداول والحاسبات والمفكرة', [
+    ['ideas', '✦', 'أفكار التداول', 'خططك وحالة كل فكرة', 'tab:ideas'],
+    ['advisor', '◉', 'مستشار التداول الذكي', 'تحليل يومياتك عبر Claude', 'tab:ai'],
+    ['charts', '▥', 'الرسوم البيانية', 'شموع مباشرة للعملات', 'soon:charts'],
+    ['watch', '◎', 'قائمة المتابعة', 'عملاتك ومستوياتها', 'page:watch'],
+    ['alerts', '🔔', 'تنبيهات الأسعار', 'تنبيهات لمستويات الأسعار', 'page:alerts'],
+    ['calendar', '▦', 'التقويم الاقتصادي', 'بيانات مؤثرة وتوقعات', 'soon:calendar'],
+    ['sessions', '◔', 'جلسات السوق', 'آسيا ولندن ونيويورك', 'page:sessions'],
+    ['tools', '✎', 'أدوات التداول', 'حجم المركز والهامش وR:R والتراجع والفائدة المركبة', 'page:calc'],
+    ['liq', '◍', 'خريطة السيولة', 'عمق دفتر الأوامر', 'soon:liq'],
+    ['conv', '⇄', 'محوّل الكريبتو', 'تحويل بسعر تدخله', 'page:conv'],
+  ]],
+  ['تابع أموالي', 'التدريب والحسابات وحدود المخاطرة', [
+    ['paper', '▣', 'تداول افتراضي', 'تدرّب بأموال افتراضية بدون مخاطرة', 'page:paper'],
+    ['acct', '⌂', 'حساب التداول', 'ربط Binance وBybit للقراءة فقط', 'soon:acct'],
+    ['capital', '◆', 'رأس المال', 'الإيداعات والسحوبات والرصيد', 'page:capital'],
+    ['guard', '⛨', 'حارس الحساب الممول', 'حدود الخسارة اليومية والإجمالية', 'page:guard'],
+    ['strat', '▤', 'أداء استراتيجياتي', 'الأرباح والخسائر ونسبة الفوز', 'page:strategies'],
+    ['backtest', '↺', 'مختبر الاختبار التاريخي', 'تدرّب على سجل حقيقي', 'soon:backtest'],
+  ]],
+  ['يومياتي', 'سجّل صفقاتك وراجعها', [
+    ['trades', '✐', 'يوميات التداول', 'سجّل صفقاتك وراجعها', 'page:trades'],
+    ['stats', '▮', 'تحليلات اليوميات', 'إحصاءات شاملة ومنحنيات', 'page:stats'],
+  ]],
+  ['تعلّم', 'أدلة ودورات', [
+    ['risk', '⚖', 'قواعد إدارة المخاطرة', 'أساسيات حماية رأس المال', 'page:risk'],
+    ['copy', '⧉', 'دليل نسخ الصفقات', 'ما تنتبه له قبل النسخ', 'page:copy'],
+    ['acad', '🎓', 'الأكاديمية والتعليم', 'دروس ومستويات', 'soon:acad'],
+    ['talks', '🎙', 'بودكاست وفيديوهات', 'محتوى صوتي ومرئي', 'soon:talks'],
+    ['brokers', '⛨', 'مراجعات المنصات', 'تقييم منصات التداول', 'soon:brokers'],
+  ]],
+  ['سجل', 'كل فكرة أغلقناها ونتيجتها', [
+    ['idealog', '▤', 'سجل أفكاري', 'كل أفكارك ونتائجها', 'page:idealog'],
+    ['ideaperf', '▮', 'أداء الأفكار', 'نسبة التحقق وصافي R', 'page:ideaperf'],
+  ]],
+  ['المجتمع', 'الدوري والمتصدرون', [
+    ['community', '☺', 'المجتمع والدوري', 'نقاش وتحديات ولوحة متصدرين', 'soon:community'],
+  ]],
+];
+const SOON = {
+  charts: 'تحتاج خادماً يجلب شموع Binance ويرسمها. هذه الصفحة المنشورة لا تستطيع الاتصال بمواقع خارجية، وهو الجزء التالي في المشروع.',
+  calendar: 'التقويم الاقتصادي يحتاج مزوّد بيانات بمفتاح خاص يعمل من الخادم.',
+  liq: 'خريطة السيولة تحتاج قراءة عمق دفتر الأوامر من Binance على الخادم.',
+  acct: 'ربط الحساب بمفاتيح قراءة فقط يحتاج خادماً يشفّر المفاتيح ويحميها. لا تضع مفاتيحك في صفحة منشورة.',
+  backtest: 'الاختبار التاريخي يحتاج شموعاً تاريخية من الخادم.',
+  acad: 'المحتوى التعليمي يحتاج إعداداً مستقلاً.', talks: 'المحتوى الصوتي والمرئي يحتاج إعداداً مستقلاً.',
+  brokers: 'مراجعات المنصات تحتاج محتوى موثوقاً ومحدَّثاً.', community: 'المجتمع والدوري يحتاجان خادماً وحسابات مستخدمين.',
+};
+const PT = { watch: 'قائمة المتابعة', alerts: 'تنبيهات الأسعار', sessions: 'جلسات السوق', calc: 'أدوات التداول', conv: 'محوّل الكريبتو', trades: 'يوميات التداول', stats: 'تحليلات اليوميات', strategies: 'أداء استراتيجياتي', capital: 'رأس المال', guard: 'حارس الحساب الممول', paper: 'تداول افتراضي', idealog: 'سجل أفكاري', ideaperf: 'أداء الأفكار', copy: 'دليل نسخ الصفقات', risk: 'قواعد إدارة المخاطرة', soon: 'قريباً', ach: 'الإنجازات' };
+const ICOL = { target: 'up', stopped: 'dn', trailing: 'ac', active: 'ac', pending: 'mut', expired: 'mut' };
+const CLOSED_I = ['target', 'stopped', 'expired'];
+function ensure() {
+  S.watch = S.watch || []; S.alerts = S.alerts || []; S.cap = S.cap || []; S.pins = S.pins || [];
+  S.guard = Object.assign({ start: 1000, daily: 5, total: 10, target: 10 }, S.guard || {});
+  S.set = Object.assign({ theme: 'auto', balance: 1000, name: '' }, S.set); S.set.notif = Object.assign({ ideas: true, offers: true, community: true }, S.set.notif || {});
+}
+ensure();
+const ideaR = (i) => { const c = calc({ ...i, qty: 1, sizeMode: 'qty' }); return i.status === 'target' ? (c.rrs[c.rrs.length - 1] || 0) : i.status === 'stopped' ? -1 : 0; };
+const dayKey = (ts) => new Date(ts).toDateString();
+function streak() {
+  const days = new Set([...S.trades.map((t) => dayKey(t.openedAt)), ...S.ideas.map((i) => dayKey(i.at))]); let n = 0; const d = new Date();
+  if (!days.has(d.toDateString())) d.setDate(d.getDate() - 1);
+  while (days.has(d.toDateString())) { n++; d.setDate(d.getDate() - 1); } return n;
+}
+const row = (a, b, k) => `<div class="row"><span class="mut">${a}</span><b class="${k || ''}">${b}</b></div>`;
+function marketBlock() {
+  if (window.TIC_SERVER) return `<div class="card"><div class="row"><b>الأسعار المباشرة</b><span class="tag up">● مباشر</span></div><div id="mk-tick" class="mut">جارٍ التحميل...</div></div><div class="card"><b>خريطة السوق</b><div id="mk-heat" class="grid g3" style="margin-top:8px"></div></div><div class="card"><b>معنويات السوق</b><div id="mk-sent"></div></div>`;
+  return `<div class="card"><div class="row"><b>الأسعار وخريطة السوق والمعنويات</b><span class="tag">غير متصل</span></div><p class="mut">تظهر هنا الأسعار المباشرة وخريطة التغير ومعنويات المشترين والبائعين عندما تعمل الصفحة من خادم المشروع. لا أعرض أرقاماً ثابتة أو مختلقة.</p></div>`;
+}
+async function loadMarket() {
+  if (!window.TIC_SERVER || !$('#mk-tick')) return;
+  try {
+    const d = await (await fetch('/api/market/overview')).json();
+    $('#mk-tick').innerHTML = d.tickers.map((x) => row(esc(x.s), f(x.price, 6) + ' <span class="' + cls(x.chg) + '">' + f(x.chg) + '%</span>')).join('');
+    $('#mk-heat').innerHTML = d.tickers.map((x) => `<div class="card" style="margin:0;text-align:center"><b>${esc(x.s.replace('USDT', ''))}</b><div class="${cls(x.chg)}">${f(x.chg)}%</div></div>`).join('');
+    $('#mk-sent').innerHTML = (d.sentiment || []).map((x) => `<div style="margin-top:8px"><div class="row"><b>${esc(x.s)}</b><span class="mut up">شراء ${f(x.long, 0)}%</span><span class="mut dn">بيع ${f(x.short, 0)}%</span></div><div class="bar"><i style="width:${x.long}%"></i></div></div>`).join('') || '<span class="mut">لا توجد بيانات.</span>';
+  } catch (e) { $('#mk-tick').textContent = 'تعذر تحميل البيانات'; }
+}
+function ideaCard(i) {
+  const c = calc({ ...i, qty: i.qty || 1, sizeMode: 'qty' }), r = ideaR(i), open = ui.open === i.id;
+  const det = open ? `<div style="margin-top:8px">${row('الدخول', f(i.entry, 6))}${row('الوقف', f(i.stop, 6))}${row('الأهداف', (i.tps || []).map((p, k) => f(p, 6) + ' (' + f(c.rrs[k], 1) + 'R)').join('، ') || '-')}
+    ${i.qty > 0 ? row('الحجم', f(i.qty, 6) + ' وحدة · ' + f(i.usd) + ' $') + row('المخاطرة', f(c.risk) + ' $', 'dn') : ''}${i.strategy ? row('الاستراتيجية', esc(i.strategy)) : ''}
+    ${i.reason ? `<div class="mut">${esc(i.reason)}</div>` : ''}${i.note ? `<div class="mut">${esc(i.note)}</div>` : ''}
+    <div class="seg">${Object.entries(ISTAT).map(([k, t]) => `<button class="${i.status === k ? 'on' : ''}" data-a="istat" data-id="${i.id}" data-k="${k}">${t}</button>`).join('')}</div>
+    <div class="row"><button class="s" data-a="itotrade" data-id="${i.id}">تحويل إلى صفقة</button><button class="s" data-a="iedit" data-id="${i.id}">تعديل</button><button class="s" data-a="idel" data-id="${i.id}">${ui.del === i.id ? 'تأكيد الحذف' : 'حذف'}</button></div></div>` : '';
+  return `<div class="card idea ${ICOL[i.status]}"><div class="row"><div class="rbox ${cls(r)}"><b>${r > 0 ? '+' : ''}${f(r)}</b><span class="mut">R</span></div>
+  <div style="flex:1"><b>${esc(i.symbol)} · ${i.side === 'long' ? 'BUY' : 'SELL'}</b><div><span class="tag ${ICOL[i.status]}">${ISTAT[i.status]}</span> <span class="mut">${esc(i.tf || '')}</span></div></div></div>
+  <div class="mut" style="cursor:pointer" data-a="iopen" data-id="${i.id}">${open ? 'إخفاء التفاصيل ‹' : 'اضغط لعرض فكرة التداول ›'}</div>${det}</div>`;
+}
+function tradesHtml(paper) {
+  const list = S.trades.filter((t) => !!t.paper === !!paper && (ui.filter === 'all' || t.status === ui.filter)).sort((a, b) => b.openedAt - a.openedAt).map((t) => { const c = calc(t);
+    return `<div class="card"><div class="row"><b>${esc(t.symbol)} <span class="mut">${esc(t.tf || '')}</span></b><span><span class="tag ${t.side === 'long' ? 'up' : 'dn'}">${SIDE[t.side]}</span> <span class="tag">${STAT[t.status]}</span></span></div>
+    <div class="mut">دخول ${f(t.entry, 6)} · وقف ${f(t.stop, 6)} · ${f(c.qty, 6)} وحدة (${f(c.usd)}$) · مخاطرة ${f(c.risk)}$</div>
+    <div class="mut">أهداف: ${(t.tps || []).map((p, k) => f(p, 6) + ' (' + f(c.rrs[k], 1) + 'R)').join('، ') || '-'}${t.strategy ? ' · ' + esc(t.strategy) : ''}</div>
+    ${t.status === 'closed' ? `<div class="row"><span class="mut">خروج ${f(t.exit, 6)}</span><span class="big ${cls(c.pnl)}">${f(c.r)}R · ${f(c.pnl)}$</span></div>` : `<div class="row" style="margin-top:8px"><input id="x-${t.id}" type="number" inputmode="decimal" step="any" placeholder="سعر الخروج"><button class="s" data-a="close" data-id="${t.id}">إغلاق</button></div>`}
+    <div class="row" style="margin-top:8px"><button class="s" data-a="edit" data-id="${t.id}">تعديل</button><button class="s" data-a="del" data-id="${t.id}">${ui.del === t.id ? 'تأكيد الحذف' : 'حذف'}</button></div></div>`; }).join('');
+  return `<button class="p" style="margin:0 0 10px" data-a="add" data-k="${paper ? 'paper' : ''}">+ صفقة جديدة</button>${seg([['all', 'الكل'], ['open', 'مفتوحة'], ['pending', 'معلقة'], ['closed', 'مغلقة']], ui.filter, 'filter')}${list || '<div class="card mut">لا توجد صفقات.</div>'}`;
+}
+function dirHtml() {
+  const q = (ui.q || '').trim(), pins = DIR.flatMap((s) => s[2]).filter((x) => S.pins.includes(x[0]));
+  const li = (x) => `<div class="li"><div class="ic">${x[1]}</div><div style="flex:1" data-a="open" data-k="${x[0]}"><b>${x[2]}</b><div class="mut">${x[3]}${x[4].startsWith('soon') ? ' · قريباً' : ''}</div></div><button class="s" data-a="pin" data-k="${x[0]}">${S.pins.includes(x[0]) ? '★' : '☆'}</button></div>`;
+  const secs = DIR.map(([t, sub, items]) => { const it = items.filter((x) => !q || (x[2] + x[3]).includes(q)); return it.length ? `<h2 style="margin-top:14px">${t}</h2><div class="mut">${sub}</div><div class="card">${it.map(li).join('')}</div>` : ''; }).join('');
+  return (q ? '' : `<h2>الاختصارات</h2>${pins.length ? `<div class="card">${pins.map(li).join('')}</div>` : '<div class="card mut">لا اختصارات بعد. اضغط ☆ بجانب أي أداة لتثبيتها هنا.</div>'}`) + (secs || '<div class="card mut">لا نتائج.</div>');
+}
+function achievements() {
+  const st = stats(), n = S.trades.length, s = streak();
+  return [['أول صفقة', n >= 1], ['10 صفقات', n >= 10], ['50 صفقة', n >= 50], ['سلسلة 7 أيام', s >= 7], ['صافي R موجب', st.R.n >= 5 && st.R.net > 0], ['فكرة تحققت', S.ideas.some((i) => i.status === 'target')], ['انضباط: وقف في كل صفقة', n >= 10 && S.trades.every((t) => t.stop > 0)]];
+}
+const guide = (arr) => `<div class="card">${arr.map((x) => `<p>${x}</p>`).join('')}</div><div class="mut">للتعليم فقط وليس نصيحة استثمارية.</div>`;
+const pages = {
+  trades: () => tradesHtml(false),
+  paper() { const s = stats(true); return `<div class="mut">حساب تجريبي منفصل: لا تدخل صفقاته في إحصاءاتك الحقيقية. علّم الصفقة بخيار تداول افتراضي عند إضافتها.</div>${tradesHtml(true)}${s.rows.length ? statsHtml(true) : ''}`; },
+  stats: () => statsHtml(false),
+  calc: () => calcHtml(),
+  sessions: () => `<div class="card">${sessions()}</div><div class="mut">سوق الكريبتو يعمل على مدار الساعة. الجلسات تؤثر في السيولة والتذبذب فقط. بالتوقيت العالمي وتقريبية.</div>`,
+  strategies() { const s = stats(); return s.byStr.length ? `<div class="card wrap"><table><tr><th>الاستراتيجية</th><th>صفقات</th><th>ربح%</th><th>R</th><th>$</th></tr>${s.byStr.map((x) => `<tr><td>${esc(x.k)}</td><td>${x.R.n}</td><td>${x.R.win == null ? '-' : f(x.R.win * 100, 0)}</td><td class="${cls(x.R.net)}">${f(x.R.net)}</td><td class="${cls(x.P.net)}">${f(x.P.net)}</td></tr>`).join('')}</table></div><div class="mut">سجّل اسم الاستراتيجية في كل صفقة لتظهر هنا.</div>` : '<div class="card mut">أغلق صفقات وسجّل لها استراتيجية لتظهر المقارنة.</div>'; },
+  watch() { return `<div class="card"><div class="grid"><label>الرمز<input id="w-sym" value="BTCUSDT" autocapitalize="characters"></label><label>مستوى مهم<input id="w-lv" type="number" inputmode="decimal" step="any"></label></div><label style="margin-top:8px">ملاحظة<input id="w-note"></label><div class="err" id="w-err"></div><button class="p" data-a="wadd">إضافة للمتابعة</button></div>
+    ${S.watch.map((w) => `<div class="card"><div class="row"><b>${esc(w.symbol)}</b><button class="s" data-a="wdel" data-id="${w.id}">حذف</button></div><div class="mut">${w.level ? 'مستوى ' + f(w.level, 6) : ''} ${esc(w.note)}</div></div>`).join('') || '<div class="card mut">القائمة فارغة.</div>'}<div class="mut">السعر الحي بجانب كل عملة يظهر عند ربط الخادم.</div>`; },
+  alerts() { return `<div class="card"><div class="grid"><label>الرمز<input id="al-sym" value="BTCUSDT" autocapitalize="characters"></label><label>السعر المستهدف<input id="al-lv" type="number" inputmode="decimal" step="any"></label></div>
+    <label style="margin-top:8px">الاتجاه<select id="al-dir"><option value="up">عند الصعود إلى المستوى</option><option value="down">عند الهبوط إلى المستوى</option></select></label><div class="err" id="al-err"></div><button class="p" data-a="aladd">إضافة تنبيه</button></div>
+    ${S.alerts.map((a) => `<div class="card"><div class="row"><b>${esc(a.symbol)} ${a.dir === 'up' ? '↑' : '↓'} ${f(a.level, 6)}</b><button class="s" data-a="aldel" data-id="${a.id}">حذف</button></div></div>`).join('') || '<div class="card mut">لا تنبيهات.</div>'}<div class="mut">التنبيهات تُحفظ هنا، ولا تُطلَق إلا عند ربط الخادم الذي يراقب الأسعار.</div>`; },
+  conv() { const c = ui.c, v = c.ca > 0 && c.cp > 0 ? c.ca * c.cp : null; return `<div class="card"><div class="grid"><label>الكمية (عملة)<input data-c="ca" type="number" inputmode="decimal" value="${c.ca ?? ''}"></label><label>السعر (USDT)<input data-c="cp" type="number" inputmode="decimal" value="${c.cp ?? ''}"></label></div><div id="co7" style="margin-top:8px">${v == null ? '<span class="mut">أدخل الكمية والسعر.</span>' : row('القيمة', f(v) + ' USDT') + row('عكسياً: USDT لكل وحدة', f(1 / c.cp, 8))}</div></div><div class="mut">أدخل السعر بنفسك. السعر الحي يأتي مع الخادم.</div>`; },
+  capital() { const dep = S.cap.reduce((a, x) => a + (x.type === 'dep' ? x.amt : -x.amt), 0), net = stats().P.net;
+    return `<div class="grid">${[['رأس المال الصافي', f(dep) + ' $', ''], ['الرصيد الحالي', f(dep + net) + ' $', cls(net)], ['صافي الأداء', f(net) + ' $', cls(net)], ['العائد', dep > 0 ? f((net / dep) * 100) + '%' : '-', cls(net)]].map((x) => `<div class="card"><div class="mut">${x[0]}</div><div class="big ${x[2]}">${x[1]}</div></div>`).join('')}</div>
+    <div class="card"><div class="grid"><label>العملية<select id="cp-t"><option value="dep">إيداع</option><option value="wd">سحب</option></select></label><label>المبلغ (USD)<input id="cp-a" type="number" inputmode="decimal" step="any"></label></div><label style="margin-top:8px">ملاحظة<input id="cp-n"></label><button class="p" data-a="capadd">إضافة</button></div>
+    ${S.cap.map((x) => `<div class="card row"><span>${x.type === 'dep' ? 'إيداع' : 'سحب'} <b class="${x.type === 'dep' ? 'up' : 'dn'}">${f(x.amt)} $</b> <span class="mut">${esc(x.note)}</span></span><button class="s" data-a="capdel" data-id="${x.id}">حذف</button></div>`).join('')}`; },
+  guard() { const g = S.guard, rows = stats().rows, eq = g.start + stats().P.net, today = rows.filter((x) => dayKey(x.t.closedAt) === dayKey(Date.now())).reduce((a, x) => a + x.pnl, 0);
+    const dl = Math.max(0, (-today / g.start) * 100), tl = Math.max(0, ((g.start - eq) / g.start) * 100), pr = Math.max(0, ((eq - g.start) / g.start) * 100);
+    const bar = (t, v, lim, good) => { const p = Math.min(100, (v / lim) * 100); return `<div style="margin-top:10px"><div class="row"><span>${t}</span><b class="${good ? 'up' : p >= 100 ? 'dn' : p >= 80 ? 'dn' : ''}">${f(v)}% من ${f(lim)}%</b></div><div class="bar risk ${good ? 'good' : ''}"><i style="width:${p}%"></i></div></div>`; };
+    return `<div class="card"><div class="grid g3"><label>الرصيد الابتدائي<input data-g="start" type="number" inputmode="decimal" value="${g.start}"></label><label>أقصى خسارة يومية %<input data-g="daily" type="number" inputmode="decimal" value="${g.daily}"></label><label>أقصى تراجع كلي %<input data-g="total" type="number" inputmode="decimal" value="${g.total}"></label></div><label style="margin-top:8px">هدف الربح %<input data-g="target" type="number" inputmode="decimal" value="${g.target}"></label></div>
+    <div class="card"><div class="row"><b>الرصيد التقديري</b><b class="${cls(eq - g.start)}">${f(eq)} $</b></div>${bar('الخسارة اليومية', dl, g.daily)}${bar('التراجع الكلي', tl, g.total)}${bar('التقدم نحو الهدف', pr, g.target, true)}${dl >= g.daily || tl >= g.total ? '<div class="err">تجاوزت أحد الحدود. أوقف التداول وراجع خطتك.</div>' : ''}</div><div class="mut">الحساب من صفقاتك المغلقة في الدفتر فقط، وقد تختلف قواعد شركتك الممولة في طريقة القياس.</div>`; },
+  idealog: () => S.ideas.length ? S.ideas.slice().sort((a, b) => b.at - a.at).map((i) => `<div class="card row"><span><b>${esc(i.symbol)}</b> ${i.side === 'long' ? 'BUY' : 'SELL'} <span class="tag ${ICOL[i.status]}">${ISTAT[i.status]}</span><div class="mut">${new Date(i.at).toLocaleDateString('en-GB')}</div></span><b class="${cls(ideaR(i))}">${f(ideaR(i))}R</b></div>`).join('') : '<div class="card mut">لا أفكار بعد.</div>',
+  ideaperf() { const c = S.ideas.filter((i) => ['target', 'stopped'].includes(i.status)); if (!c.length) return '<div class="card mut">تظهر الإحصاءات بعد إغلاق فكرة بتحقق الهدف أو ضرب الوقف.</div>'; const s = sum(c.map(ideaR)); return `<div class="grid">${[['أفكار محسومة', s.n], ['نسبة التحقق', f(s.win * 100, 1) + '%'], ['صافي R', f(s.net) + 'R'], ['أقصى تراجع', f(s.dd) + 'R']].map((x) => `<div class="card"><div class="mut">${x[0]}</div><div class="big">${x[1]}</div></div>`).join('')}</div>`; },
+  risk: () => guide(['خاطر بنسبة ثابتة وصغيرة من الرصيد في كل صفقة، وكثيرون يختارون بين 0.5% و2%.', 'حدّد وقف الخسارة قبل الدخول ولا تحركه ضد صفقتك.', 'اجعل نسبة العائد إلى المخاطرة معقولة، فنسبة 1:2 تحتاج نسبة ربح أقل من 34% للتعادل قبل الرسوم.', 'الرافعة العالية تقرّب سعر التصفية من الدخول. تأكد أن الوقف قبل التصفية.', 'ضع سقفاً للخسارة اليومية وتوقف عند بلوغه.']),
+  copy: () => guide(['راجع سجل المتداول لفترة طويلة وليس نتائج أسابيع قليلة.', 'انظر إلى أقصى تراجع وليس إلى الربح فقط.', 'افهم حجم المخاطرة التي ستتحملها في حسابك وليس في حسابه.', 'ابدأ بمبلغ صغير وراقب الفروق في التنفيذ والرسوم.', 'لا تثق بوعود أرباح مضمونة. تحقق من ترخيص الجهة وشروطها.']),
+  soon() { return `<div class="card"><b>قريباً</b><p class="mut">${SOON[ui.soon] || 'هذه الميزة قيد التطوير.'}</p></div>`; },
+  ach: () => `<div class="card">${achievements().map((a) => `<div class="row" style="padding:6px 0"><span>${a[0]}</span><span class="tag ${a[1] ? 'up' : ''}">${a[1] ? 'تحقق ✓' : 'لم يتحقق'}</span></div>`).join('')}</div>`,
+};
+const views = {
+  home() {
+    const h = new Date().getHours(), st = stats(), from = Date.now() - 7 * 864e5, wk = st.rows.filter((x) => (x.t.closedAt || 0) >= from), W = sum(wk.map((x) => x.r || 0)), top = st.byStr[0], best = st.rows.reduce((m, x) => Math.max(m, x.r || 0), 0);
+    const open = S.trades.filter((t) => t.status === 'open' && !t.paper).length, ideasOn = S.ideas.filter((i) => !CLOSED_I.includes(i.status)).length;
+    return `<div class="row"><div><div class="mut">${h < 12 ? 'صباح الخير' : 'مساء الخير'}</div><b class="big">${esc(S.set.name || 'متداول')}</b></div><div class="av">${esc((S.set.name || 'م').slice(0, 2).toUpperCase())}</div></div>
+    <div style="height:10px"></div>${marketBlock()}
+    <div class="card hl"><b>هذا الأسبوع</b><p class="mut">أغلقت ${wk.length} صفقة هذا الأسبوع. اطلع على السجل الكامل ثم قارن بين استراتيجياتك.</p><button class="p" data-a="open" data-k="trades">اطلع على يومياتك ›</button><div class="mut" style="text-align:center;margin-top:8px;cursor:pointer" data-a="open" data-k="strat">قارن بين الاستراتيجيات</div></div>
+    <div class="card"><b>أسبوعك</b><div class="grid g3" style="margin-top:8px"><div><div class="mut">نسبة الفوز</div><div class="big">${W.win == null ? '-' : f(W.win * 100, 0) + '%'}</div></div><div><div class="mut">الصفقات</div><div class="big">${W.n}</div></div><div><div class="mut">صافي R</div><div class="big ${cls(W.net)}">${f(W.net)}R</div></div></div></div>
+    <h2>وصول سريع</h2><div class="grid g3" style="grid-template-columns:repeat(5,1fr);gap:6px">${[['trades', '✐', 'اليوميات'], ['alerts', '🔔', 'تنبيهات'], ['paper', '▣', 'افتراضي'], ['guard', '⛨', 'الحارس'], ['risk', '🎓', 'تعلّم']].map((x) => `<button class="s qa" data-a="open" data-k="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>
+    <h2 style="margin-top:14px">يحدث الآن</h2><div class="card">${row('🔥 سلسلة التسجيل اليومية', streak() + ' يوم')}${row('صفقات مفتوحة', open)}${row('أفكار نشطة', ideasOn)}</div>
+    <h2>أداء دفترك</h2><div class="grid g3"><div class="card"><div class="mut">النمو</div><div class="big ${cls(st.P.net)}">${f((st.P.net / S.set.balance) * 100, 1)}%</div></div><div class="card"><div class="mut">أفضل صفقة</div><div class="big up">${f(best)}R</div></div><div class="card"><div class="mut">استراتيجيات</div><div class="big">${st.byStr.length}</div></div></div>
+    ${top ? `<div class="card"><div class="row"><b>أفضل استراتيجية</b><span class="${cls(top.P.net)} big">${f(top.P.net)} $</span></div><div class="mut">${esc(top.k)} · ${top.R.n} صفقة</div></div>` : ''}`;
+  },
+  ideas() {
+    const list = S.ideas.filter((i) => (ui.hist ? CLOSED_I.includes(i.status) : !CLOSED_I.includes(i.status))).sort((a, b) => b.at - a.at);
+    return `<h2>أفكار التداول</h2><div class="mut">خطط تداول تسجّلها بنفسك مع نسبة العائد إلى المخاطرة وحالة كل فكرة.</div>
+    <div class="seg"><button class="${ui.hist ? '' : 'on'}" data-a="ihist" data-k="">النشطة</button><button class="${ui.hist ? 'on' : ''}" data-a="ihist" data-k="1">السجل التاريخي</button></div>
+    <button class="p" style="margin:0 0 10px" data-a="inew">+ فكرة جديدة</button>
+    ${list.map(ideaCard).join('') || `<div class="card mut">${ui.hist ? 'لا أفكار مغلقة بعد.' : 'لا أفكار نشطة. أضف فكرة وغيّر حالتها بنفسك. المسح الآلي للفرص يحتاج الخادم.'}</div>`}`;
+  },
+  desk() { return `<h2>المكتب</h2><div class="mut">كل أدواتك في مكان واحد</div><input id="d-q" placeholder="ابحث عن الأدوات" value="${esc(ui.q || '')}" style="margin:8px 0"><div id="dir">${dirHtml()}</div>`; },
+  ai() {
+    return `<h2>المستشار الذكي</h2><div class="mut">يحلل يومياتك وإحصاءاتك فقط، ولا يعطي أوامر دخول أو خروج. القرار لك.</div>
+    <div class="seg"><button data-a="chip" data-k="حلل أدائي واذكر أهم نقاط القوة والضعف">حلل أدائي</button><button data-a="chip" data-k="ما أكثر الأخطاء المتكررة في صفقاتي؟">أخطائي</button><button data-a="chip" data-k="اقترح قواعد لإدارة المخاطرة تناسب إحصاءاتي">قواعد المخاطرة</button></div>
+    <div class="card chat" id="chat">${ui.chat.map((m, i) => `<div class="b ${m.r === 'user' ? 'u' : 'a'}" id="m${i}">${esc(m.t)}</div>`).join('') || '<span class="mut">اسأل عن أدائك أو عن صفقة محددة.</span>'}</div>
+    <div class="row"><input id="q" placeholder="اكتب سؤالك"><button class="s" data-a="ask">إرسال</button></div><div class="err" id="q-err"></div>`;
+  },
+  me() {
+    const n = S.set.notif, tg = (k, t) => `<div class="row" style="padding:6px 0"><span>${t}</span><input type="checkbox" data-n="${k}" ${n[k] ? 'checked' : ''} style="width:auto"></div>`;
+    const lk = (k, t, sub) => `<div class="li" data-a="open" data-k="${k}"><div style="flex:1"><b>${t}</b><div class="mut">${sub}</div></div><span class="mut">‹</span></div>`;
+    return `<h2>الملف الشخصي</h2><div class="card hl"><div class="row"><div class="av">${esc((S.set.name || 'م').slice(0, 2).toUpperCase())}</div><div style="flex:1"><label>الاسم<input data-prof="name" value="${esc(S.set.name)}" placeholder="اسمك"></label></div></div></div>
+    <div class="card"><b>اللغة والمظهر</b><div class="mut">اللغة: العربية</div>${seg([['auto', 'تلقائي'], ['dark', 'ليلي'], ['light', 'نهاري']], S.set.theme, 'theme')}<label>الرصيد الافتراضي (USDT)<input id="p-bal" type="number" inputmode="decimal" value="${S.set.balance}"></label></div>
+    <div class="card"><b>التداول</b>${lk('trades', 'يوميات التداول', 'سجّل صفقاتك وراجعها')}${lk('alerts', 'تنبيهات الأسعار', 'مستويات الأسعار')}${lk('watch', 'قائمة المتابعة', 'عملاتك المفضلة')}${lk('paper', 'تداول افتراضي', 'تدرّب بدون مخاطرة')}${lk('capital', 'رأس المال', 'الإيداعات والسحوبات')}${lk('guard', 'حارس الحساب الممول', 'حدود المخاطرة')}${lk('strat', 'أداء الاستراتيجيات', 'الأرباح والخسائر ونسبة الفوز')}${lk('acct', 'حساب التداول', 'Binance وBybit للقراءة فقط')}</div>
+    <div class="card"><b>الإنجازات</b>${lk('ach', 'الشارات والإنجازات', achievements().filter((a) => a[1]).length + ' من ' + achievements().length)}</div>
+    <div class="card"><b>الإشعارات</b>${tg('ideas', 'تنبيهات الأفكار')}${tg('offers', 'العروض')}${tg('community', 'تحديثات المجتمع')}<div class="mut">تُحفظ تفضيلاتك الآن، ويبدأ الإرسال الفعلي عند ربط الخادم.</div></div>
+    <div class="card"><b>الحفظ</b><div class="mut">${synced ? 'بياناتك محفوظة في حسابك وتظهر على أي جهاز تفتح منه الصفحة.' : 'بياناتك محفوظة في متصفح هذا الجهاز فقط. خذ نسخة احتياطية بانتظام.'}</div>
+    <div class="row" style="margin-top:8px"><button class="s" data-a="export">تصدير نسخة</button><button class="s" data-a="import">استرجاع من النص</button></div><textarea id="bk" rows="3" placeholder="الصق هنا نسخة احتياطية للاسترجاع"></textarea><div class="err" id="bk-err"></div>
+    <button class="s" data-a="reset">${ui.del === 'all' ? 'تأكيد: حذف كل البيانات' : 'حذف كل البيانات'}</button></div><div class="mut">للتنظيم والتعليم وليس نصيحة استثمارية. تداول الكريبتو عالي المخاطر.</div>`;
+  },
+};
+
+function calcHtml() {
+  return `<div class="card"><b>حجم المركز</b><div class="grid g3">
+  <label>الرصيد<input data-c="bal" type="number" inputmode="decimal" value="${ui.c.bal}"></label><label>المخاطرة %<input data-c="risk" type="number" inputmode="decimal" value="${ui.c.risk}"></label><label>رسوم %<input data-c="fee" type="number" inputmode="decimal" value="${ui.c.fee}"></label>
+  <label>الدخول<input data-c="entry" type="number" inputmode="decimal" value="${ui.c.entry}"></label><label>الوقف<input data-c="stop" type="number" inputmode="decimal" value="${ui.c.stop}"></label><label>الرافعة<input data-c="lev" type="number" inputmode="decimal" value="${ui.c.lev}"></label></div>
+  <div id="co1" style="margin-top:8px"></div></div>
+  <div class="card"><b>المخاطرة من حجم معروف</b>${seg([['qty', 'بالكمية'], ['usd', 'بالدولار']], ui.c.mode, 'cmode')}
+  <label>${ui.c.mode === 'qty' ? 'الكمية (وحدات)' : 'الحجم (USD)'}<input data-c="size" type="number" inputmode="decimal" value="${ui.c.size}"></label><div id="co2" style="margin-top:8px"></div></div>
+  <div class="card"><b>العائد إلى المخاطرة</b><label>الهدف<input data-c="tgt" type="number" inputmode="decimal" value="${ui.c.tgt}"></label><div id="co3" style="margin-top:8px"></div></div>
+  <div class="card"><b>استرداد التراجع</b><label>نسبة التراجع %<input data-c="dd" type="number" inputmode="decimal" value="${ui.c.dd}"></label><div id="co4" style="margin-top:8px"></div></div>
+  <div class="card"><b>الهامش</b><div class="mut">يستخدم الحجم والرافعة أعلاه (بالكمية أو بالدولار)</div><div id="co5" style="margin-top:8px"></div></div>
+  <div class="card"><b>الفائدة المركبة</b><div class="grid g3"><label>المبلغ<input data-c="cs" type="number" inputmode="decimal" value="${ui.c.cs}"></label><label>عائد شهري %<input data-c="cr" type="number" inputmode="decimal" value="${ui.c.cr}"></label><label>عدد الأشهر<input data-c="cm" type="number" inputmode="decimal" value="${ui.c.cm}"></label></div><div id="co6" style="margin-top:8px"></div></div>
+  <div class="mut">سعر التصفية تقريبي لهامش معزول، والرقم الفعلي يختلف من منصة لأخرى.</div>`;
+}
+function calcOut() {
+  const c = ui.c, o = (n, h) => { const e = $('#co' + n); if (e) e.innerHTML = h; };
+  const row = (a, b, k) => `<div class="row"><span class="mut">${a}</span><b class="${k || ''}">${b}</b></div>`;
+  const ok = c.entry > 0 && c.stop > 0 && c.entry !== c.stop, side = c.stop < c.entry ? 'long' : 'short', mmr = 0.005;
+  const liq = (lev) => (side === 'long' ? c.entry * (1 - 1 / lev + mmr) : c.entry * (1 + 1 / lev - mmr));
+  if (!ok) { o(1, '<span class="mut">أدخل الدخول والوقف.</span>'); o(2, '<span class="mut">أدخل الدخول والوقف.</span>'); }
+  else {
+    const risk = (c.bal * c.risk) / 100, fee = (c.fee || 0) / 100, qty = risk / (Math.abs(c.entry - c.stop) + (c.entry + c.stop) * fee), usd = qty * c.entry;
+    o(1, row('الاتجاه', SIDE[side], side === 'long' ? 'up' : 'dn') + row('المبلغ المعرّض', f(risk) + ' $') + row('الكمية', f(qty, 6)) + row('الحجم', f(usd) + ' $') + row('الهامش', f(usd / c.lev) + ' $') + row('التصفية التقريبية', f(liq(c.lev), 4), 'dn')
+      + ((side === 'long' ? liq(c.lev) >= c.stop : liq(c.lev) <= c.stop) ? '<div class="err">تحذير: التصفية أقرب من الوقف، خفّض الرافعة.</div>' : ''));
+    const q2 = ui.c.mode === 'usd' ? c.size / c.entry : c.size, r2 = q2 * Math.abs(c.entry - c.stop);
+    o(2, q2 > 0 ? row('الكمية', f(q2, 6)) + row('الحجم', f(q2 * c.entry) + ' $') + row('المخاطرة', f(r2) + ' $', 'dn') + row('نسبة من الرصيد', f((r2 / c.bal) * 100) + '%') : '<span class="mut">أدخل الحجم.</span>');
+  }
+  const rr = ok && c.tgt > 0 ? Math.abs(c.tgt - c.entry) / Math.abs(c.entry - c.stop) : null;
+  o(3, rr == null ? '<span class="mut">أدخل الدخول والوقف والهدف.</span>' : row('R:R', '1 : ' + f(rr)) + row('نسبة الربح اللازمة للتعادل', f(100 / (1 + rr), 1) + '%'));
+  const d = c.dd / 100;
+  o(4, d > 0 && d < 1 ? row('الربح المطلوب للتعويض', f((d / (1 - d)) * 100, 1) + '%', 'up') + `<div class="mut">${[5, 10, 20, 30, 50].map((x) => x + '% ← ' + f((x / (100 - x)) * 100, 1) + '%').join(' · ')}</div>` : '<span class="mut">أدخل نسبة بين 0 و100.</span>');
+}
+function statsHtml(paper = false) {
+  const s = stats(paper);
+  if (!s.rows.length) return '<div class="card mut">أغلق صفقة واحدة على الأقل لتظهر الإحصاءات.</div>';
+  const box = (a, b, k) => `<div class="card"><div class="mut">${a}</div><div class="big ${k || ''}">${b}</div></div>`;
+  const tbl = (title, arr) => `<div class="card wrap"><b>${title}</b><table><tr><th></th><th>صفقات</th><th>ربح%</th><th>R</th><th>$</th></tr>${arr.map((x) => `<tr><td>${esc(x.k)}</td><td>${x.R.n}</td><td>${x.R.win == null ? '-' : f(x.R.win * 100, 0)}</td><td class="${cls(x.R.net)}">${f(x.R.net)}</td><td class="${cls(x.P.net)}">${f(x.P.net)}</td></tr>`).join('')}</table></div>`;
+  return `<div class="grid">${box('الصفقات المغلقة', s.R.n)}${box('نسبة الربح', s.R.win == null ? '-' : f(s.R.win * 100, 1) + '%')}${box('صافي R', f(s.R.net) + 'R', cls(s.R.net))}${box('صافي الربح', f(s.P.net) + ' $', cls(s.P.net))}
+  ${box('التوقع لكل صفقة', f(s.R.exp) + 'R', cls(s.R.exp))}${box('معامل الربح', s.R.pf == null ? '-' : f(s.R.pf))}${box('أقصى تراجع', f(s.R.dd) + 'R · ' + f(s.P.dd) + '$', s.R.dd ? 'dn' : '')}${box('الرصيد الحالي', f(S.set.balance + s.P.net) + ' $')}</div>
+  <div class="card"><div class="mut">نمو المحفظة (الرصيد بالدولار)</div>${curve(s.P.curve.map((v) => S.set.balance + v))}</div>
+  <div class="card"><div class="mut">منحنى R</div>${curve(s.R.curve)}</div>${tbl('حسب الزوج', s.bySym)}${tbl('حسب الاستراتيجية', s.byStr)}`;
+}
+
+// ---------- trade sheet ----------
+let form = null;
+function sheetHtml(t) {
+  const tps = (t.tps && t.tps.length ? t.tps : ['']).map((p) => `<input class="tp" type="number" inputmode="decimal" step="any" value="${p}">`).join('');
+  return `<h2>${t.id ? 'تعديل صفقة' : 'صفقة جديدة'}</h2><div class="grid">
+  <label>الزوج<input id="f-sym" value="${esc(t.symbol)}" list="pairs" autocapitalize="characters"></label>
+  <label>الإطار الزمني<select id="f-tf">${['1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((x) => `<option ${x === t.tf ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+  <label>الاتجاه<select id="f-side"><option value="long" ${t.side === 'long' ? 'selected' : ''}>شراء Long</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>بيع Short</option></select></label>
+  <label>الحالة<select id="f-status">${Object.entries(STAT).map(([k, v]) => `<option value="${k}" ${t.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
+  <label>سعر الدخول<input id="f-en" type="number" inputmode="decimal" step="any" value="${t.entry || ''}"></label>
+  <label>وقف الخسارة<input id="f-st" type="number" inputmode="decimal" step="any" value="${t.stop || ''}"></label></div>
+  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
+  <div class="card" style="margin-top:8px"><div class="row"><b>الأهداف</b><button class="s" data-a="addtp">+ هدف</button></div><div class="grid g3" id="tps">${tps}</div></div>
+  <div class="card"><b>حجم الصفقة</b><div class="seg"><button class="${t.sizeMode === 'qty' ? 'on' : ''}" data-a="smode" data-k="qty">الكمية</button><button class="${t.sizeMode === 'usd' ? 'on' : ''}" data-a="smode" data-k="usd">الدولار USD</button></div>
+  <div class="grid"><label id="f-sl">${t.sizeMode === 'usd' ? 'الحجم (USD)' : 'الكمية (وحدات)'}<input id="f-size" type="number" inputmode="decimal" step="any" value="${(t.sizeMode === 'usd' ? t.usd : t.qty) || ''}"></label>
+  <label>الرسوم (USD)<input id="f-fees" type="number" inputmode="decimal" step="any" value="${t.fees || 0}"></label></div></div>
+  <label id="f-exw" ${t.status === 'closed' ? '' : 'hidden'}>سعر الخروج الفعلي<input id="f-ex" type="number" inputmode="decimal" step="any" value="${t.exit || ''}"></label>
+  <label style="margin-top:8px">الاستراتيجية<input id="f-str" list="strs" value="${esc(t.strategy)}"></label><datalist id="strs">${[...new Set(S.trades.map((x) => x.strategy).filter(Boolean))].map((x) => `<option>${esc(x)}</option>`).join('')}</datalist>
+  <label style="margin-top:8px">سبب الدخول<textarea id="f-why" rows="2">${esc(t.reason)}</textarea></label>
+  <label style="margin-top:8px">الحالة النفسية والملاحظات<textarea id="f-notes" rows="2">${esc(t.notes)}</textarea></label>
+  <label style="margin-top:8px"><input type="checkbox" id="f-paper" style="width:auto" ${t.paper ? 'checked' : ''}> صفقة تداول افتراضي (تجريبية)</label><div class="card" id="f-prev" style="margin-top:10px"></div><div class="err" id="f-err"></div>
+  <div class="row"><button class="p" data-a="save">حفظ</button><button class="s" style="margin-top:10px" data-a="cancel">إلغاء</button></div>`;
+}
+function readForm() {
+  const g = (i) => $('#' + i).value, mode = form.sizeMode, sz = num(g('f-size')), en = num(g('f-en'));
+  const t = { ...form, symbol: g('f-sym').trim().toUpperCase(), tf: g('f-tf'), side: g('f-side'), status: g('f-status'), entry: en, stop: num(g('f-st')),
+    tps: $$('.tp').map((e) => num(e.value)).filter((x) => x > 0), sizeMode: mode, fees: num(g('f-fees')) || 0,
+    exit: g('f-status') === 'closed' ? num(g('f-ex')) : null, strategy: g('f-str').trim(), reason: g('f-why').trim(), notes: g('f-notes').trim(), paper: $('#f-paper').checked };
+  t.qty = mode === 'qty' ? sz : sz / en; t.usd = mode === 'usd' ? sz : sz * en;
+  return t;
+}
+function preview() {
+  const t = readForm(), e = $('#f-prev'); $('#f-exw').hidden = t.status !== 'closed';
+  if (!(t.entry > 0 && t.stop > 0 && t.entry !== t.stop && (t.qty > 0))) { e.innerHTML = '<span class="mut">أدخل الدخول والوقف والحجم لتظهر الحسابات.</span>'; return; }
+  const c = calc({ ...t, exit: t.exit > 0 ? t.exit : null }), r = (a, b, k) => `<div class="row"><span class="mut">${a}</span><b class="${k || ''}">${b}</b></div>`;
+  e.innerHTML = r('الكمية', f(c.qty, 6)) + r('القيمة بالدولار', f(c.usd) + ' $') + r('المخاطرة', f(c.risk) + ' $ (' + f((c.risk / S.set.balance) * 100) + '% من الرصيد)', 'dn')
+    + c.rrs.map((x, i) => r('R:R للهدف ' + (i + 1), '1 : ' + f(x), 'up')).join('') + (c.pnl != null ? r('الصافي', f(c.pnl) + ' $ · ' + f(c.r) + 'R', cls(c.pnl)) : '');
+}
+function openSheet(t) {
+  form = t || { symbol: 'BTCUSDT', tf: '1h', side: 'long', status: 'open', sizeMode: 'qty', tps: [], fees: 0, openedAt: Date.now() };
+  const s = $('#sheet'); s.innerHTML = sheetHtml(form); s.hidden = false; s.scrollTop = 0; preview();
+}
+$('#sheet').addEventListener('input', () => form && preview());
+$('#sheet').addEventListener('change', () => form && preview());
+
+// ---------- actions ----------
+const act = {
+  tab(d) { ui.tab = d.k; ui.del = null; render(); },
+  sub(d) { ui.sub = d.k; render(); }, filter(d) { ui.filter = d.k; render(); },
+  add() { openSheet(null); }, cancel() { form = null; $('#sheet').hidden = true; },
+  edit(d) { openSheet({ ...S.trades.find((t) => t.id === d.id) }); },
+  addtp() { const i = document.createElement('input'); i.className = 'tp'; i.type = 'number'; i.inputMode = 'decimal'; i.step = 'any'; $('#tps').appendChild(i); },
+  smode(d) { const cur = readForm(), en = cur.entry > 0 ? cur.entry : null, sz = num($('#f-size').value);
+    if (en && sz > 0) $('#f-size').value = f(d.k === 'usd' ? sz * en : sz / en, 8).replace(/,/g, '');
+    form = { ...form, sizeMode: d.k }; $$('[data-a="smode"]').forEach((b) => b.classList.toggle('on', b.dataset.k === d.k)); $('#f-sl').firstChild.textContent = d.k === 'usd' ? 'الحجم (USD)' : 'الكمية (وحدات)'; preview(); },
+  save() { const t = readForm(), er = validate(t); if (er) { $('#f-err').textContent = er; return; }
+    if (t.status === 'closed' && !t.closedAt) t.closedAt = Date.now();
+    if (!t.id) { t.id = Date.now().toString(36); S.trades.unshift(t); } else S.trades = S.trades.map((x) => (x.id === t.id ? t : x));
+    persist(); act.cancel(); render(); },
+  close(d) { const v = num($('#x-' + d.id).value); if (!(v > 0)) return; S.trades = S.trades.map((t) => (t.id === d.id ? { ...t, exit: v, status: 'closed', closedAt: Date.now() } : t)); persist(); render(); },
+  del(d) { if (ui.del === d.id) { S.trades = S.trades.filter((t) => t.id !== d.id); ui.del = null; persist(); } else ui.del = d.id; render(); },
+  iadd() { const g = (i) => $('#' + i).value, t = { kind: 'idea', symbol: g('i-sym').trim().toUpperCase(), side: g('i-side'), entry: num(g('i-en')), stop: num(g('i-st')), tps: [num(g('i-t1')), num(g('i-t2'))].filter((x) => x > 0) };
+    const er = validate(t); if (er) { $('#i-err').textContent = er; return; }
+    S.ideas.unshift({ ...t, id: Date.now().toString(36), status: 'pending', note: g('i-note').trim().slice(0, 300), at: Date.now() }); persist(); render(); },
+  istat(d) { S.ideas = S.ideas.map((i) => (i.id === d.id ? { ...i, status: d.k } : i)); persist(); render(); },
+  idel(d) { if (ui.del === d.id) { S.ideas = S.ideas.filter((i) => i.id !== d.id); ui.del = null; persist(); } else ui.del = d.id; render(); },
+  cmode(d) { ui.c.mode = d.k; render(); },
+  theme(d) { S.set.theme = d.k; applyTheme(); persist(); render(); },
+  async export() {
+    try { const dl = typeof claude !== 'undefined' ? await claude.use('downloads') : null; if (dl) { await dl.save({ filename: 'trading-journal.json', data: JSON.stringify(S) }); return; } } catch (e) {}
+    $('#bk').value = JSON.stringify(S); },
+  import() { try { const v = JSON.parse($('#bk').value); if (!v || !Array.isArray(v.trades)) throw 0; S = Object.assign({ trades: [], ideas: [], set: S.set }, v); persist(); render(); } catch (e) { $('#bk-err').textContent = 'نص غير صالح'; } },
+  reset() { if (ui.del === 'all') { S.trades = []; S.ideas = []; ui.del = null; persist(); } else ui.del = 'all'; render(); },
+  chip(d) { ask(d.k); },
+  ask() { const q = $('#q'); if (q.value.trim()) { ask(q.value.trim()); q.value = ''; } },
+};
+document.addEventListener('click', (e) => { const b = e.target.closest('[data-a]'); if (b && act[b.dataset.a]) act[b.dataset.a](b.dataset, b); });
+document.addEventListener('input', (e) => {
+  const k = e.target.dataset && e.target.dataset.c;
+  if (k) { ui.c[k] = e.target.value === '' ? '' : num(e.target.value); calcOut(); }
+  if (e.target.id === 'p-bal' && num(e.target.value) > 0) { S.set.balance = num(e.target.value); persist(); }
+});
+
+// ---------- AI advisor (asks Claude through the page runtime) ----------
+function context() {
+  const s = stats(), last = s.rows.slice(-15).map((x) => ({ pair: x.t.symbol, side: x.t.side, R: +f(x.r, 2).replace(/,/g, ''), strategy: x.t.strategy, reason: x.t.reason, notes: x.t.notes }));
+  const g = (a) => a.map((x) => ({ name: x.k, trades: x.R.n, winRate: x.R.win, netR: x.R.net, netUSD: x.P.net }));
+  return 'أنت مستشار لتحليل أداء متداول كريبتو. اعتمد على البيانات التالية فقط ولا تخترع أرقاماً. لا تعطِ أوامر دخول أو خروج قطعية، وذكّر بإدارة المخاطرة عند الحاجة. أجب بالعربية باختصار وبنقاط واضحة.\nالبيانات: ' + JSON.stringify({ overall: { trades: s.R.n, winRate: s.R.win, expectancyR: s.R.exp, netR: s.R.net, netUSD: s.P.net, maxDrawdownR: s.R.dd, profitFactor: s.R.pf }, byPair: g(s.bySym), byStrategy: g(s.byStr), lastTrades: last });
+}
+async function ask(q) {
+  if (ui.busy) return;
+  const err = (m) => { const e = $('#q-err'); if (e) e.textContent = m; };
+  let sample = null;
+  try { sample = typeof claude !== 'undefined' ? await claude.use('sample') : null; } catch (e) {}
+  if (!sample) { ui.tab = 'ai'; render(); err('المستشار غير متاح في هذا العرض.'); return; }
+  ui.busy = true; ui.chat.push({ r: 'user', t: q }, { r: 'assistant', t: '...' }); ui.tab = 'ai'; render();
+  const idx = ui.chat.length - 1, msgs = ui.chat.slice(0, -1).map((m) => ({ role: m.r, content: m.t }));
+  msgs[msgs.length - 1].content = context() + '\n\nالسؤال: ' + q;
+  try {
+    const res = await sample(msgs, { cache: false, onText: ({ text }) => { ui.chat[idx].t = text; const b = $('#m' + idx); if (b) b.textContent = text; } });
+    ui.chat[idx].t = res.text;
+  } catch (e) { ui.chat[idx].t = e && e.code === 'not_granted' ? 'تم رفض الإذن. يمكنك المحاولة لاحقاً.' : 'تعذر الحصول على رد الآن.'; }
+  ui.busy = false; render();
+}
+
+// ---------- render ----------
+Object.assign(ui, { page: null, soon: null, q: '', hist: false, open: null, ideaForm: null });
+Object.assign(ui.c, { cs: 1000, cr: 5, cm: 12, ca: '', cp: '' });
+const _co = calcOut;
+calcOut = function () {
+  _co();
+  const c = ui.c, o = (n, h) => { const e = $('#co' + n); if (e) e.innerHTML = h; };
+  const notional = c.mode === 'usd' ? c.size : c.size * c.entry;
+  o(5, notional > 0 && c.lev >= 1 ? row('قيمة المركز', f(notional) + ' $') + row('الهامش المطلوب', f(notional / c.lev) + ' $') : '<span class="mut">أدخل الحجم والسعر والرافعة.</span>');
+  const v = c.cs * Math.pow(1 + c.cr / 100, c.cm);
+  o(6, c.cs > 0 && c.cm >= 0 ? row('القيمة بعد المدة', f(v) + ' $', 'up') + row('الربح', f(v - c.cs) + ' $') : '<span class="mut">أدخل القيم.</span>');
+  o(7, c.ca > 0 && c.cp > 0 ? row('القيمة', f(c.ca * c.cp) + ' USDT') + row('عكسياً: USDT لكل وحدة', f(1 / c.cp, 8)) : '<span class="mut">أدخل الكمية والسعر.</span>');
+};
+function openIdea(i) {
+  ui.ideaForm = i ? { id: i.id } : {}; form = null;
+  const t = i || { symbol: 'BTCUSDT', tf: '1h', side: 'long', sizeMode: 'qty', tps: [] };
+  const tps = (t.tps && t.tps.length ? t.tps : ['', '']).map((p) => `<input class="tp" type="number" inputmode="decimal" step="any" value="${p}">`).join('');
+  const s = $('#sheet');
+  s.innerHTML = `<h2>${i ? 'تعديل فكرة' : 'فكرة جديدة'}</h2><div class="grid">
+  <label>الزوج<input id="i-sym" value="${esc(t.symbol)}" list="pairs" autocapitalize="characters"></label>
+  <label>الإطار الزمني<select id="i-tf">${['1m', '5m', '15m', '1h', '4h', '1d', '1w'].map((x) => `<option ${x === t.tf ? 'selected' : ''}>${x}</option>`).join('')}</select></label>
+  <label>الاتجاه<select id="i-side"><option value="long" ${t.side === 'long' ? 'selected' : ''}>شراء Long</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>بيع Short</option></select></label><span></span>
+  <label>سعر الدخول<input id="i-en" type="number" inputmode="decimal" step="any" value="${t.entry || ''}"></label>
+  <label>وقف الخسارة<input id="i-st" type="number" inputmode="decimal" step="any" value="${t.stop || ''}"></label></div>
+  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
+  <div class="card" style="margin-top:8px"><div class="row"><b>الأهداف</b><button class="s" data-a="addtp">+ هدف</button></div><div class="grid g3" id="tps">${tps}</div></div>
+  <div class="card"><b>حجم الصفقة</b><div class="grid"><label>طريقة الإدخال<select id="i-sm"><option value="qty" ${t.sizeMode !== 'usd' ? 'selected' : ''}>الكمية (وحدات)</option><option value="usd" ${t.sizeMode === 'usd' ? 'selected' : ''}>الحجم بالدولار USD</option></select></label>
+  <label>الحجم<input id="i-size" type="number" inputmode="decimal" step="any" value="${(t.sizeMode === 'usd' ? t.usd : t.qty) || ''}"></label></div></div>
+  <label>الاستراتيجية<input id="i-str" value="${esc(t.strategy)}"></label><label style="margin-top:8px">سبب الفكرة<textarea id="i-why" rows="2">${esc(t.reason)}</textarea></label>
+  <label style="margin-top:8px">ملاحظة<input id="i-note" value="${esc(t.note)}"></label>
+  <div class="card" id="i-prev" style="margin-top:10px"></div><div class="err" id="i-err"></div>
+  <div class="row"><button class="p" data-a="isave">حفظ الفكرة</button><button class="s" style="margin-top:10px" data-a="cancel">إلغاء</button></div>`;
+  s.hidden = false; s.scrollTop = 0; ideaPrev();
+}
+function ideaPrev() {
+  const g = (i) => { const e = $('#' + i); return e ? e.value : ''; }, e = $('#i-prev'); if (!e) return;
+  const en = num(g('i-en')), st = num(g('i-st')), sz = num(g('i-size')), mode = g('i-sm');
+  if (!(en > 0 && st > 0 && en !== st)) { e.innerHTML = '<span class="mut">أدخل الدخول والوقف لتظهر الحسابات.</span>'; return; }
+  const qty = sz > 0 ? (mode === 'qty' ? sz : sz / en) : 0, dist = Math.abs(en - st), tps = $$('.tp').map((x) => num(x.value)).filter((x) => x > 0);
+  e.innerHTML = (qty > 0 ? row('الكمية', f(qty, 6)) + row('القيمة', f(qty * en) + ' $') + row('المخاطرة', f(qty * dist) + ' $ (' + f((qty * dist / S.set.balance) * 100) + '% من الرصيد)', 'dn') : '<span class="mut">أدخل الحجم لحساب المخاطرة.</span>')
+    + tps.map((p, k) => row('R:R للهدف ' + (k + 1), '1 : ' + f(Math.abs(p - en) / dist), 'up')).join('');
+}
+const nid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 5);
+Object.assign(act, {
+  tab(d) { ui.tab = d.k; ui.page = null; ui.del = null; render(); scrollTo(0, 0); },
+  back() { ui.page = null; render(); },
+  open(d) {
+    const it = DIR.flatMap((s) => s[2]).find((x) => x[0] === d.k), tg = it ? it[4] : 'page:' + d.k, [kind, id] = tg.split(':');
+    if (kind === 'tab') { ui.tab = id; ui.page = null; } else if (kind === 'soon') { ui.page = 'soon'; ui.soon = id; } else ui.page = id;
+    ui.filter = 'all'; render(); scrollTo(0, 0);
+  },
+  pin(d) { S.pins = S.pins.includes(d.k) ? S.pins.filter((x) => x !== d.k) : [...S.pins, d.k]; persist(); $('#dir').innerHTML = dirHtml(); },
+  add(d) { openSheet(null); if (d.k === 'paper') { $('#f-paper').checked = true; } },
+  cancel() { form = null; ui.ideaForm = null; $('#sheet').hidden = true; },
+  ihist(d) { ui.hist = !!d.k; render(); }, iopen(d) { ui.open = ui.open === d.id ? null : d.id; render(); },
+  inew() { openIdea(null); }, iedit(d) { openIdea(S.ideas.find((i) => i.id === d.id)); },
+  isave() {
+    const g = (i) => $('#' + i).value, mode = g('i-sm'), sz = num(g('i-size')), en = num(g('i-en'));
+    const t = { kind: 'idea', symbol: g('i-sym').trim().toUpperCase(), tf: g('i-tf'), side: g('i-side'), entry: en, stop: num(g('i-st')), tps: $$('.tp').map((e) => num(e.value)).filter((x) => x > 0), sizeMode: mode, strategy: g('i-str').trim(), reason: g('i-why').trim(), note: g('i-note').trim().slice(0, 300) };
+    t.qty = sz > 0 ? (mode === 'qty' ? sz : sz / en) : 0; t.usd = sz > 0 ? (mode === 'usd' ? sz : sz * en) : 0;
+    const er = validate(t); if (er) { $('#i-err').textContent = er; return; }
+    if (ui.ideaForm && ui.ideaForm.id) S.ideas = S.ideas.map((i) => (i.id === ui.ideaForm.id ? { ...i, ...t } : i)); else S.ideas.unshift({ ...t, id: nid(), status: 'pending', at: Date.now() });
+    persist(); act.cancel(); ui.tab = 'ideas'; ui.page = null; render();
+  },
+  itotrade(d) {
+    const i = S.ideas.find((x) => x.id === d.id); if (!i) return;
+    S.ideas = S.ideas.map((x) => (x.id === i.id && x.status === 'pending' ? { ...x, status: 'active' } : x)); persist();
+    openSheet({ symbol: i.symbol, tf: i.tf || '1h', side: i.side, status: 'open', sizeMode: i.sizeMode || 'qty', entry: i.entry, stop: i.stop, tps: i.tps || [], qty: i.qty, usd: i.usd, strategy: i.strategy, reason: i.reason, notes: i.note, fees: 0, openedAt: Date.now() });
+  },
+  wadd() { const s = $('#w-sym').value.trim().toUpperCase(); if (!/^[A-Z0-9]{3,20}$/.test(s)) { $('#w-err').textContent = 'رمز غير صالح'; return; } S.watch.unshift({ id: nid(), symbol: s, level: num($('#w-lv').value) || null, note: $('#w-note').value.trim().slice(0, 200) }); persist(); render(); },
+  wdel(d) { S.watch = S.watch.filter((x) => x.id !== d.id); persist(); render(); },
+  aladd() { const s = $('#al-sym').value.trim().toUpperCase(), lv = num($('#al-lv').value); if (!/^[A-Z0-9]{3,20}$/.test(s) || !(lv > 0)) { $('#al-err').textContent = 'أدخل رمزاً وسعراً صحيحين'; return; } S.alerts.unshift({ id: nid(), symbol: s, level: lv, dir: $('#al-dir').value, at: Date.now() }); persist(); render(); },
+  aldel(d) { S.alerts = S.alerts.filter((x) => x.id !== d.id); persist(); render(); },
+  capadd() { const a = num($('#cp-a').value); if (!(a > 0)) return; S.cap.unshift({ id: nid(), type: $('#cp-t').value, amt: a, note: $('#cp-n').value.trim().slice(0, 100), at: Date.now() }); persist(); render(); },
+  capdel(d) { S.cap = S.cap.filter((x) => x.id !== d.id); persist(); render(); },
+});
+$('#sheet').addEventListener('input', () => { if (ui.ideaForm) ideaPrev(); });
+$('#sheet').addEventListener('change', () => { if (ui.ideaForm) ideaPrev(); });
+document.addEventListener('input', (e) => {
+  const t = e.target, d = t.dataset || {};
+  if (t.id === 'd-q') { ui.q = t.value; $('#dir').innerHTML = dirHtml(); }
+  if (d.g) { S.guard[d.g] = num(t.value) || 0; persist(); }
+  if (d.n) { S.set.notif[d.n] = t.checked; persist(); }
+  if (d.prof) { S.set.name = t.value; persist(); }
+});
+document.addEventListener('change', (e) => { if (e.target.dataset && e.target.dataset.g) render(); });
+function render() {
+  ensure();
+  $('#nav').innerHTML = TABS.map(([k, t, i]) => `<button class="${k === ui.tab && !ui.page ? 'on' : ''}" data-a="tab" data-k="${k}"><b>${i}</b>${t}</button>`).join('');
+  const v = $('#v');
+  if (ui.page) {
+    v.innerHTML = `<div class="row"><button class="s" data-a="back">→ رجوع</button><h2 style="margin:0">${PT[ui.page] || 'قريباً'}</h2><span></span></div><div style="height:10px"></div>` + (pages[ui.page] ? pages[ui.page]() : '');
+    if (ui.page === 'calc') calcOut();
+  } else v.innerHTML = views[ui.tab]();
+  if (ui.tab === 'home' && !ui.page) loadMarket();
+}
+applyTheme(); render();
+setInterval(() => { if (ui.tab === 'home' && !ui.page && $('#sheet').hidden) render(); }, 60000);
+</script>
+</body>
+</html>
