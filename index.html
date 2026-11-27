@@ -86,6 +86,17 @@ button:focus-visible,input:focus-visible,select:focus-visible,textarea:focus-vis
 @media(max-width:899px) and (max-height:500px) and (orientation:landscape){
  body{padding-bottom:50px}nav button{font-size:12px;padding:2px 0}nav b{display:inline;font-size:15px;margin-inline-end:5px}.in{min-height:44px}
 }
+
+/* ---- v3: market bar, scanner, movers, calendar ---- */
+.mbar{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:8px;margin-bottom:10px}
+.mb{background:var(--card);border:1px solid var(--bd);border-radius:12px;padding:10px;display:flex;flex-direction:column;gap:3px;box-shadow:0 1px 2px rgba(0,0,0,.05)}
+.mb .sub{font-size:11.5px}.mbar .note{grid-column:1/-1;font-size:11.5px;color:var(--mut)}
+.fg{height:6px;border-radius:99px;background:linear-gradient(90deg,var(--dn),#e0a030,var(--up));position:relative;margin-top:6px}
+.fg i{position:absolute;top:-3px;width:3px;height:12px;background:var(--tx);border-radius:2px}
+.gf{display:grid;grid-template-columns:repeat(auto-fit,minmax(135px,1fr));gap:8px}
+.ck{display:flex;gap:8px;align-items:center;font-size:13px;color:var(--tx);margin:4px 0}.ck input{width:auto;margin:0}
+a.lk{color:var(--ac);text-decoration:none}a.lk:hover{text-decoration:underline}
+.lks{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:6px}
 </style>
 </head>
 <body>
@@ -177,12 +188,13 @@ const seg = (items, cur, act) => `<div class="seg">${items.map(([k, t]) => `<but
 const DIR = [
   ['خطط صفقة', 'أفكار التداول والحاسبات والمفكرة', [
     ['ideas', '✦', 'أفكار التداول', 'خططك وحالة كل فكرة', 'tab:ideas'],
-    ['scanner', '⌕', 'ماسح الفرص', 'RSI وEMA وتقاطعاتها والدعم والمقاومة', 'page:scanner'],
+    ['scanner', '⌕', 'ماسح الفرص', 'شروط MA50/MA200 وRSI والحجم على عملات واسعة', 'page:scanner'],
+    ['movers', '⇅', 'الرابحون والسيولة وRSI', 'الأكثر نشاطاً وتشبع RSI', 'page:movers'],
     ['advisor', '◉', 'مستشار التداول الذكي', 'تحليل يومياتك عبر Claude', 'tab:ai'],
     ['charts', '▥', 'الرسوم البيانية', 'شموع مباشرة للعملات', 'page:charts'],
     ['watch', '◎', 'قائمة المتابعة', 'عملاتك ومستوياتها', 'page:watch'],
     ['alerts', '🔔', 'تنبيهات الأسعار', 'تنبيهات لمستويات الأسعار', 'page:alerts'],
-    ['calendar', '▦', 'التقويم الاقتصادي', 'بيانات مؤثرة وتوقعات', 'soon:calendar'],
+    ['calendar', '▦', 'التقويم الاقتصادي', 'الفائدة والتضخم والوظائف + أخبار السوق', 'page:calendar'],
     ['sessions', '◔', 'جلسات السوق', 'آسيا ولندن ونيويورك', 'page:sessions'],
     ['tools', '✎', 'أدوات التداول', 'حجم المركز والهامش وR:R والتراجع والفائدة المركبة', 'page:calc'],
     ['liq', '◍', 'خريطة السيولة', 'عمق دفتر الأوامر', 'page:liq'],
@@ -224,7 +236,7 @@ const SOON = {
   acad: 'المحتوى التعليمي يحتاج إعداداً مستقلاً.', talks: 'المحتوى الصوتي والمرئي يحتاج إعداداً مستقلاً.',
   brokers: 'مراجعات المنصات تحتاج محتوى موثوقاً ومحدَّثاً.', community: 'المجتمع والدوري يحتاجان خادماً وحسابات مستخدمين.',
 };
-const PT = { watch: 'قائمة المتابعة', alerts: 'تنبيهات الأسعار', sessions: 'جلسات السوق', calc: 'أدوات التداول', conv: 'محوّل الكريبتو', trades: 'يوميات التداول', stats: 'تحليلات اليوميات', strategies: 'أداء استراتيجياتي', capital: 'رأس المال', guard: 'حارس الحساب الممول', paper: 'تداول افتراضي', idealog: 'سجل أفكاري', ideaperf: 'أداء الأفكار', copy: 'دليل نسخ الصفقات', risk: 'قواعد إدارة المخاطرة', soon: 'قريباً', charts: 'الرسوم البيانية', liq: 'خريطة السيولة', scanner: 'ماسح الفرص', ach: 'الإنجازات' };
+const PT = { watch: 'قائمة المتابعة', alerts: 'تنبيهات الأسعار', sessions: 'جلسات السوق', calc: 'أدوات التداول', conv: 'محوّل الكريبتو', trades: 'يوميات التداول', stats: 'تحليلات اليوميات', strategies: 'أداء استراتيجياتي', capital: 'رأس المال', guard: 'حارس الحساب الممول', paper: 'تداول افتراضي', idealog: 'سجل أفكاري', ideaperf: 'أداء الأفكار', copy: 'دليل نسخ الصفقات', risk: 'قواعد إدارة المخاطرة', soon: 'قريباً', charts: 'الرسوم البيانية', liq: 'خريطة السيولة', scanner: 'ماسح الفرص', ach: 'الإنجازات', calendar: 'التقويم الاقتصادي', movers: 'الرابحون والسيولة' };
 const ICOL = { target: 'up', stopped: 'dn', trailing: 'ac', active: 'ac', pending: 'mut', expired: 'mut' };
 const CLOSED_I = ['target', 'stopped', 'expired'];
 function ensure() {
@@ -293,7 +305,7 @@ const pages = {
   sessions: () => `<div class="card">${sessions()}</div><div class="mut">سوق الكريبتو يعمل على مدار الساعة. الجلسات تؤثر في السيولة والتذبذب فقط. بالتوقيت العالمي وتقريبية.</div>`,
   strategies() { const s = stats(); return s.byStr.length ? `<div class="card wrap"><table><tr><th>الاستراتيجية</th><th>صفقات</th><th>ربح%</th><th>R</th><th>$</th></tr>${s.byStr.map((x) => `<tr><td>${esc(x.k)}</td><td>${x.R.n}</td><td>${x.R.win == null ? '-' : f(x.R.win * 100, 0)}</td><td class="${cls(x.R.net)}">${f(x.R.net)}</td><td class="${cls(x.P.net)}">${f(x.P.net)}</td></tr>`).join('')}</table></div><div class="mut">سجّل اسم الاستراتيجية في كل صفقة لتظهر هنا.</div>` : '<div class="card mut">أغلق صفقات وسجّل لها استراتيجية لتظهر المقارنة.</div>'; },
   watch() { return `<div class="card"><div class="grid"><label>الرمز<input id="w-sym" value="BTCUSDT" autocapitalize="characters"></label><label>مستوى مهم<input id="w-lv" type="number" inputmode="decimal" step="any"></label></div><label style="margin-top:8px">ملاحظة<input id="w-note"></label><div class="err" id="w-err"></div><button class="p" data-a="wadd">إضافة للمتابعة</button></div>
-    ${S.watch.map((w) => `<div class="card"><div class="row"><b>${esc(w.symbol)}</b><button class="s" data-a="wdel" data-id="${w.id}">حذف</button></div><div class="mut">${w.level ? 'مستوى ' + f(w.level, 6) : ''} · السعر <b class="num" data-px="${w.symbol}">-</b> ${esc(w.note)}</div></div>`).join('') || '<div class="card mut">القائمة فارغة.</div>'}<div class="mut">الأسعار تتحدّث تلقائياً كل 5 ثوانٍ عند فتح الصفحة من الرابط العام.</div>`; },
+    ${S.watch.map((w) => `<div class="card"><div class="row"><b>${esc(w.symbol)}</b><span><button class="s" data-a="wchart" data-s="${w.symbol}">مؤشرات</button> <button class="s" data-a="wdel" data-id="${w.id}">حذف</button></span></div><div class="mut">${w.level ? 'مستوى ' + f(w.level, 6) : ''} · السعر <b class="num" data-px="${w.symbol}">-</b> ${esc(w.note)}</div></div>`).join('') || '<div class="card mut">القائمة فارغة.</div>'}<div class="mut">الأسعار تتحدّث تلقائياً كل 5 ثوانٍ عند فتح الصفحة من الرابط العام.</div>`; },
   alerts() { return `<div class="card"><div class="grid"><label>الرمز<input id="al-sym" value="BTCUSDT" autocapitalize="characters"></label><label>السعر المستهدف<input id="al-lv" type="number" inputmode="decimal" step="any"></label></div>
     <label style="margin-top:8px">الاتجاه<select id="al-dir"><option value="up">عند الصعود إلى المستوى</option><option value="down">عند الهبوط إلى المستوى</option></select></label><div class="err" id="al-err"></div><button class="p" data-a="aladd">إضافة تنبيه</button></div>
     ${S.alerts.map((a) => `<div class="card"><div class="row"><b>${esc(a.symbol)} ${a.dir === 'up' ? '↑' : '↓'} ${f(a.level, 6)} ${a.fired ? '<span class="tag up">أُطلق ✓</span>' : ''}</b><button class="s" data-a="aldel" data-id="${a.id}">حذف</button></div></div>`).join('') || '<div class="card mut">لا تنبيهات.</div>'}<div class="mut">${LIVE ? 'تُفحص الأسعار كل 5 ثوانٍ والتطبيق مفتوح فقط، ولا تصلك تنبيهات وهو مغلق.' : 'تُحفظ هنا وتُفحص عند فتح التطبيق من الرابط العام.'}</div>`; },
@@ -320,13 +332,13 @@ const views = {
     const opens = S.trades.filter((t) => t.status === 'open').sort((a, b) => b.openedAt - a.openedAt), ideasOn = S.ideas.filter((i) => !CLOSED_I.includes(i.status)).length;
     const oi = (t) => `<div class="oi"><div class="row"><b>${esc(t.symbol)} <span class="tag ${t.side === 'long' ? 'up' : 'dn'}">${SIDE[t.side]}</span>${t.paper ? ' <span class="tag">افتراضي</span>' : ''}</b><span class="mut num">دخول ${f(t.entry, 6)} · وقف ${f(t.stop, 6)}</span></div><div class="live" data-lv="${t.id}">${liveHtml(t)}</div></div>`;
     return `<div class="row"><div><div class="mut">${h < 12 ? 'صباح الخير' : 'مساء الخير'}</div><b class="big">${esc(S.set.name || 'متداول')}</b></div><div class="av">${esc((S.set.name || 'م').slice(0, 2).toUpperCase())}</div></div>
-    <div style="height:10px"></div><div class="cols"><div>
+    <div style="height:10px"></div>${mktBar()}<div class="cols"><div>
     <div class="card"><div class="row"><b>الصفقات المفتوحة</b><span><span class="mut">العائم </span><span id="lv-total">${totalHtml()}</span></span></div>${opens.length ? opens.map(oi).join('') : '<div class="mut" style="margin-top:6px">لا صفقات مفتوحة.</div>'}</div>
     ${marketBlock()}
     </div><div>
     <div class="card hl"><b>هذا الأسبوع</b><p class="mut">أغلقت ${wk.length} صفقة هذا الأسبوع. اطلع على السجل الكامل ثم قارن بين استراتيجياتك.</p><button class="p" data-a="open" data-k="trades">اطلع على يومياتك ›</button><div class="mut" style="text-align:center;margin-top:8px;cursor:pointer" data-a="open" data-k="strat">قارن بين الاستراتيجيات</div></div>
     <div class="card"><b>أسبوعك</b><div class="grid g3" style="margin-top:8px"><div><div class="mut">نسبة الفوز</div><div class="big">${W.win == null ? '-' : f(W.win * 100, 0) + '%'}</div></div><div><div class="mut">الصفقات</div><div class="big">${W.n}</div></div><div><div class="mut">صافي R</div><div class="big ${cls(W.net)}">${f(W.net)}R</div></div></div></div>
-    <h2>وصول سريع</h2><div class="grid g3" style="grid-template-columns:repeat(5,1fr);gap:6px">${[['trades', '✐', 'اليوميات'], ['alerts', '🔔', 'تنبيهات'], ['paper', '▣', 'افتراضي'], ['guard', '⛨', 'الحارس'], ['risk', '🎓', 'تعلّم']].map((x) => `<button class="s qa" data-a="open" data-k="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>
+    <h2>وصول سريع</h2><div class="grid g3" style="grid-template-columns:repeat(4,1fr);gap:6px">${[['trades', '✐', 'اليوميات'], ['scanner', '⌕', 'الماسح'], ['movers', '⇅', 'الرابحون'], ['calendar', '▦', 'التقويم'], ['alerts', '🔔', 'تنبيهات'], ['paper', '▣', 'افتراضي'], ['guard', '⛨', 'الحارس'], ['risk', '🎓', 'تعلّم']].map((x) => `<button class="s qa" data-a="open" data-k="${x[0]}"><b>${x[1]}</b>${x[2]}</button>`).join('')}</div>
     <h2 style="margin-top:14px">يحدث الآن</h2><div class="card">${row('🔥 سلسلة التسجيل اليومية', streak() + ' يوم')}${row('صفقات مفتوحة', opens.filter((t) => !t.paper).length)}${row('أفكار نشطة', ideasOn)}</div>
     <h2>أداء دفترك</h2><div class="grid g3"><div class="card"><div class="mut">النمو</div><div class="big ${cls(st.P.net)}">${f((st.P.net / S.set.balance) * 100, 1)}%</div></div><div class="card"><div class="mut">أفضل صفقة</div><div class="big up">${f(best)}R</div></div><div class="card"><div class="mut">استراتيجيات</div><div class="big">${st.byStr.length}</div></div></div>
     ${top ? `<div class="card"><div class="row"><b>أفضل استراتيجية</b><span class="${cls(top.P.net)} big">${f(top.P.net)} $</span></div><div class="mut">${esc(top.k)} · ${top.R.n} صفقة</div></div>` : ''}
@@ -515,7 +527,7 @@ Object.assign(ui.c, { cs: 1000, cr: 5, cm: 12, ca: '', cp: '' });
 const LIVE = typeof claude === 'undefined';
 const BN = 'https://api.binance.com', BF = 'https://fapi.binance.com';
 const DEFAULT_SYMS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT'];
-Object.assign(ui, { prices: {}, valid: null, live: 0, pmeta: {}, fail: {}, nf: {}, conn: { ok: false, src: null, t: 0 }, lastEval: 0, ch: { s: 'BTCUSDT', i: '1h' }, sc: { i: '1h' }, scan: {} });
+Object.assign(ui, { prices: {}, valid: null, live: 0, pmeta: {}, fail: {}, kh: {}, ic: {}, mv: 'gl', mvI: '1h', cal: { cur: 'USD', imp: 'med' }, nf: {}, conn: { ok: false, src: null, t: 0 }, lastEval: 0, ch: { s: 'BTCUSDT', i: '1h' }, sc: { i: '1h' }, scan: {} });
 const jget = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error('http ' + r.status); return r.json(); };
 const symQ = (a) => encodeURIComponent(JSON.stringify(a));
 const kfmt = (x) => (x >= 1e6 ? f(x / 1e6, 2) + 'M' : x >= 1e3 ? f(x / 1e3, 1) + 'K' : f(x, 0));
@@ -533,7 +545,7 @@ function pivots(k, w = 5) {
   for (let i = w; i < k.length - w; i++) { let ph = true, pl = true; for (let j = 1; j <= w; j++) { if (k[i].h <= k[i - j].h || k[i].h <= k[i + j].h) ph = false; if (k[i].l >= k[i - j].l || k[i].l >= k[i + j].l) pl = false; } if (ph) hs.push(k[i].h); if (pl) ls.push(k[i].l); }
   return { hs, ls };
 }
-const toK = (rows) => rows.map((r) => ({ t: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], ct: +r[6] }));
+const toK = (rows) => rows.map((r) => ({ t: +r[0], o: +r[1], h: +r[2], l: +r[3], c: +r[4], v: +r[5], q: +r[7], ct: +r[6] }));
 const getK = async (s, i, n) => klines(s, `interval=${i}&limit=${n}`);
 // idea lifecycle on closed candles (pessimistic: stop before targets; entry candle checks stop only)
 function stepIdea(i, c) {
@@ -574,7 +586,7 @@ async function evalIdeas() {
   if (ch) { persist(); if (!ui.page && ui.tab === 'ideas' && $('#sheet').hidden) render(); }
 }
 const tmo = (u, ms = 6000) => { const c = new AbortController(), id = setTimeout(() => c.abort(), ms); return fetch(u, { signal: c.signal, cache: 'no-store' }).then((r) => { if (!r.ok) throw new Error('http ' + r.status); return r.json(); }).finally(() => clearTimeout(id)); };
-async function klines(s, qs) { let er; for (const b of [BN + '/api/v3/klines', 'https://data-api.binance.vision/api/v3/klines', BF + '/fapi/v1/klines']) { try { return toK(await tmo(b + '?symbol=' + s + '&' + qs, 8000)); } catch (e) { er = e; } } throw er; }
+async function klines(s, qs) { const H = [BN + '/api/v3/klines', 'https://data-api.binance.vision/api/v3/klines', BF + '/fapi/v1/klines'], pf = ui.kh[s], order = [...(pf != null ? [pf] : ui.uniFut ? [2] : []), 0, 1, 2].filter((x, i, ar) => ar.indexOf(x) === i); let er; for (const i of order) { try { const r = toK(await tmo(H[i] + '?symbol=' + s + '&' + qs, 8000)); ui.kh[s] = i; return r; } catch (e) { er = e; } } throw er; }
 // Price sources, tried in order. Each returns all prices at once, so one invalid symbol can never break the others.
 const bnp = (d) => d.map((x) => [x.symbol, +x.price]);
 const PX_SRC = [
@@ -610,7 +622,7 @@ async function tick(force) {
     if (await fetchPrices()) checkAlerts();
     if (force || Date.now() - ui.lastEval > 60000) { ui.lastEval = Date.now(); evalIdeas(); }
     if (ui.tab === 'home' && !ui.page) loadMarket();
-  } catch (e) {} finally { ui.ticking = false; updateLive(); }
+  } catch (e) {} finally { ui.ticking = false; updateLive(); loadGlobal(); }
 }
 // ---- live P/L ----
 const hms = (ts) => new Date(ts).toLocaleTimeString('en-GB');
@@ -638,6 +650,7 @@ function connInfo() {
   return ['dn', '○ لا اتصال بالأسعار'];
 }
 function updateLive() {
+  updateMs();
   const [k, tx] = connInfo(); $$('[data-conn]').forEach((e) => { e.className = 'tag conn ' + k; e.textContent = tx; });
   $$('[data-lv]').forEach((e) => { const t = S.trades.find((x) => x.id === e.dataset.lv); if (t) e.innerHTML = liveHtml(t); });
   $$('[data-px]').forEach((e) => { const p = ui.prices[e.dataset.px]; e.textContent = p > 0 ? f(p, 6) : '-'; });
@@ -686,7 +699,7 @@ Object.assign(act, {
   async chload() {
     const s = ($('#ch-s').value || 'BTCUSDT').trim().toUpperCase(), iv = $('#ch-i').value || '1h', box = $('#ch'); if (!okSym(s)) { box.textContent = 'رمز غير صالح'; return; }
     ui.ch = { s, i: iv };
-    try { const k = await getK(s, iv, 120), a = analyze(k), first = k[0].o; box.innerHTML = `<div class="row"><b>${esc(s)} · ${iv}</b><b class="${cls(a.p - first)}">${f(a.p, 6)}</b></div>${chartSvg(k)}<div class="mut">الأزرق EMA20 والبرتقالي EMA50</div><div style="margin-top:8px">${sigTags(a)}</div>${row('أقرب دعم', lvl(a.sup))}${row('أقرب مقاومة', lvl(a.res))}${row('ATR', f(a.atr, 6))}`; }
+    try { const kk = await getK(s, iv, 300), k = kk.slice(-120), a = analyze(k), first = k[0].o, ia = indAll(kk); box.innerHTML = `<div class="row"><b>${esc(s)} · ${iv}</b><b class="${cls(a.p - first)}">${f(a.p, 6)}</b></div>${chartSvg(k)}<div class="mut">الأزرق EMA20 والبرتقالي EMA50</div><div style="margin-top:8px">${sigTags(a)}</div>${indHtml(ia)}${row('أقرب دعم', lvl(a.sup))}${row('أقرب مقاومة', lvl(a.res))}${row('ATR', f(a.atr, 6))}`; }
     catch (e) { box.textContent = 'تعذر تحميل الشارت. تحقق من الرمز والاتصال.'; }
   },
   async liqload() {
@@ -818,14 +831,248 @@ function render() {
   ensure();
   $('#nav').innerHTML = TABS.map(([k, t, i]) => `<button class="${k === ui.tab && !ui.page ? 'on' : ''}" data-a="tab" data-k="${k}"><b>${i}</b>${t}</button>`).join('');
   const y = window.scrollY, v = $('#v'), ttl = ui.page ? (PT[ui.page] || 'قريباً') : (TABS.find((x) => x[0] === ui.tab) || [0, ''])[1];
-  $('#top').innerHTML = `<div class="in">${ui.page ? '<button class="s back" data-a="back" aria-label="رجوع">→ رجوع</button>' : ''}<h1>${ttl}</h1><span class="tag conn" data-conn></span></div>`;
+  $('#top').innerHTML = `<div class="in">${ui.page ? '<button class="s back" data-a="back" aria-label="رجوع">→ رجوع</button>' : ''}<h1>${ttl}</h1><span class="tag" data-ms hidden></span><span class="tag conn" data-conn></span></div>`;
   v.className = ui.page ? 'pg' : 't-' + ui.tab;
   v.innerHTML = ui.page ? (pages[ui.page] ? pages[ui.page]() : '') : views[ui.tab]();
   if (ui.page === 'calc') calcOut();
-  if (ui.page === 'charts') act.chload(); if (ui.page === 'liq') act.liqload(); if (ui.page === 'scanner') act.scan();
-  if (ui.tab === 'home' && !ui.page) loadMarket();
+  if (ui.page === 'charts') act.chload(); if (ui.page === 'liq') act.liqload(); if (ui.page === 'scanner') scanInit(); if (ui.page === 'movers') mvInit(); if (ui.page === 'calendar') calInit();
+  if (ui.tab === 'home' && !ui.page) { loadMarket(); loadGlobal(); }
   updateLive(); window.scrollTo(0, y);
 }
+// ===== v3: global metrics, universe, indicators, scanner, movers, calendar =====
+const bfmt = (x) => (x == null || !isFinite(x) ? '-' : x >= 1e12 ? f(x / 1e12, 2) + 'T' : x >= 1e9 ? f(x / 1e9, 2) + 'B' : x >= 1e6 ? f(x / 1e6, 1) + 'M' : f(x, 0));
+const pr6 = (x) => +Number(x).toPrecision(6);
+const FNG = { 'Extreme Fear': 'خوف شديد', Fear: 'خوف', Neutral: 'محايد', Greed: 'طمع', 'Extreme Greed': 'طمع شديد' };
+const STABLE = /^(USDC|FDUSD|TUSD|BUSD|USDP|DAI|EUR|AEUR|USDE|XUSD|USD1|RLUSD)USDT$/;
+const bn24 = (d) => d.map((x) => ({ s: x.symbol, p: +x.lastPrice, c: +x.priceChangePercent, v: +x.quoteVolume }));
+const UNI_SRC = [
+  ['Binance Futures', BF + '/fapi/v1/ticker/24hr', bn24, 1],
+  ['Binance Spot', BN + '/api/v3/ticker/24hr', bn24, 0],
+  ['Binance Vision', 'https://data-api.binance.vision/api/v3/ticker/24hr', bn24, 0],
+  ['Bybit Futures', 'https://api.bybit.com/v5/market/tickers?category=linear', (d) => d.result.list.map((x) => ({ s: x.symbol, p: +x.lastPrice, c: +x.price24hPcnt * 100, v: +x.turnover24h })), 1],
+];
+// all USDT pairs with 24h price change and quote volume (liquidity)
+async function loadUniverse(force) {
+  if (!LIVE) return null;
+  if (!force && ui.uni && Date.now() - ui.uni.t < 90000) return ui.uni;
+  if (ui.uniP) return ui.uniP;
+  ui.uniP = (async () => {
+    for (const [n, u, p, fut] of UNI_SRC) {
+      try {
+        const rows = p(await tmo(u, 12000)).filter((x) => /^[A-Z0-9]+USDT$/.test(x.s) && !STABLE.test(x.s) && x.p > 0 && isFinite(x.c) && x.v >= 0); if (rows.length < 20) continue;
+        const act24 = rows.filter((x) => x.v > 1e6);
+        ui.uniFut = !!fut; ui.uni = { t: Date.now(), src: n, rows, tv: rows.reduce((a, x) => a + x.v, 0), br: act24.length ? (act24.filter((x) => x.c > 0).length / act24.length) * 100 : null }; return ui.uni;
+      } catch (e) {}
+    }
+    return ui.uni || null;
+  })().finally(() => { ui.uniP = null; });
+  return ui.uniP;
+}
+async function loadGlobal(force) {
+  if (!LIVE) return;
+  if (!ui.gl) { try { ui.gl = JSON.parse(localStorage.getItem('tic_gl') || 'null'); } catch (e) {} }
+  paintGlobal(); loadUniverse().then(() => { paintGlobal(); paintMv(); }).catch(() => {});
+  const now = Date.now();
+  if (ui.glP || (!force && ((ui.gl && now - ui.gl.t < 300000) || (ui.glF && now - ui.glF < 60000)))) return;
+  ui.glP = (async () => {
+    const n = { ...(ui.gl || {}), t: Date.now() }; let ok = false;
+    try { const d = (await tmo('https://api.coingecko.com/api/v3/global')).data; n.mc = d.total_market_cap.usd; n.vol = d.total_volume.usd; n.mcChg = d.market_cap_change_percentage_24h_usd; n.btcD = d.market_cap_percentage.btc; n.src = 'CoinGecko'; n.gt = Date.now(); ok = true; }
+    catch (e) { try { const d = await tmo('https://api.coinpaprika.com/v1/global'); n.mc = d.market_cap_usd; n.vol = d.volume_24h_usd; n.mcChg = d.market_cap_change_24h; n.btcD = d.bitcoin_dominance_percentage; n.src = 'CoinPaprika'; n.gt = Date.now(); ok = true; } catch (e2) {} }
+    try { const d = (await tmo('https://api.alternative.me/fng/?limit=2')).data; n.fng = +d[0].value; n.fngL = d[0].value_classification; n.fngP = d[1] ? +d[1].value : null; n.ft = Date.now(); ok = true; } catch (e) {}
+    if (ok) { ui.gl = n; ui.glF = 0; try { localStorage.setItem('tic_gl', JSON.stringify(n)); } catch (e) {} } else ui.glF = Date.now();
+  })().finally(() => { ui.glP = null; paintGlobal(); });
+}
+function mState() {
+  const g = ui.gl || {}, u = ui.uni; let sc = 0, n = 0; const rs = [];
+  if (g.fng != null) { n++; sc += g.fng >= 55 ? 1 : g.fng <= 45 ? -1 : 0; rs.push((g.fng >= 55 ? 'طمع ' : g.fng <= 45 ? 'خوف ' : 'مؤشر محايد ') + g.fng); }
+  if (g.mcChg != null) { n++; sc += g.mcChg > 0.5 ? 1 : g.mcChg < -0.5 ? -1 : 0; rs.push('القيمة السوقية ' + sg(g.mcChg) + f(g.mcChg, 1) + '%'); }
+  if (u && u.br != null) { n++; sc += u.br >= 55 ? 1 : u.br <= 45 ? -1 : 0; rs.push(f(u.br, 0) + '% من العملات صاعدة'); }
+  if (!n) return null;
+  return sc >= 2 ? ['up', 'إيجابي', rs] : sc <= -2 ? ['dn', 'سلبي', rs] : ['warn', 'محايد', rs];
+}
+function mbarInner() {
+  const g = ui.gl || {}, u = ui.uni, ms = mState(), cell = (x) => `<div class="mb">${x}</div>`;
+  const vol = g.vol != null ? bfmt(g.vol) + ' $' : u ? bfmt(u.tv) + ' $' : '...', vs = g.vol != null ? (u ? 'Binance USDT: ' + bfmt(u.tv) + ' $' : '') : u ? 'مجموع أزواج Binance USDT فقط' : '';
+  const stl = g.gt && Date.now() - g.gt > 900000 ? ' · آخر تحديث ' + hms(g.gt) : '';
+  return cell(`<span class="mut">حجم التداول / السيولة (24س)</span><b class="big num">${vol}</b><span class="mut sub">${vs}</span>`)
+    + cell(`<span class="mut">القيمة السوقية الإجمالية</span><b class="big num">${g.mc != null ? bfmt(g.mc) + ' $' : '...'}</b><span class="mut sub">${g.mcChg != null ? `<span class="num ${cls(g.mcChg)}">${sg(g.mcChg)}${f(g.mcChg, 2)}%</span> خلال 24س` : ''}${g.btcD != null ? ' · هيمنة BTC ' + f(g.btcD, 1) + '%' : ''}</span>`)
+    + cell(`<span class="mut">الخوف والطمع</span><div><b class="big num">${g.fng != null ? g.fng : '...'}</b> <span>${g.fng != null ? FNG[g.fngL] || esc(g.fngL) : ''}</span></div>${g.fng != null ? `<div class="fg" dir="ltr"><i style="left:${Math.min(97, g.fng)}%"></i></div><span class="mut sub">${g.fngP != null ? 'أمس: ' + g.fngP : ''}</span>` : ''}`)
+    + cell(`<span class="mut">حالة السوق العامة</span>${ms ? `<b class="big ${ms[0]}">${ms[1]}</b><span class="mut sub">${ms[2].join(' · ')}</span>` : '<b class="big mut">غير متاح</b>'}`)
+    + `<div class="note">المصادر: ${esc(g.src || 'CoinGecko / CoinPaprika')} · alternative.me · ${u ? esc(u.src) : 'Binance'}${stl} <button class="s" data-a="glref">تحديث</button>${!g.t && !u ? ' · <span class="warn">تعذر الجلب، قد تُحجب المصادر في شبكتك</span>' : ''}</div>`;
+}
+const mktBar = () => (LIVE ? `<div class="mbar" id="mbar">${mbarInner()}</div>` : '');
+function paintGlobal() { const e = $('#mbar'); if (e) e.innerHTML = mbarInner(); updateMs(); }
+function updateMs() { const e = $('[data-ms]'); if (!e) return; const s = mState(); if (!s || !LIVE) { e.hidden = true; return; } e.hidden = false; e.className = 'tag ' + s[0]; e.textContent = 'السوق: ' + s[1]; }
+// ---- indicators ----
+const sma = (v, n) => { const o = v.map(() => null); if (v.length < n) return o; let s = 0; for (let i = 0; i < v.length; i++) { s += v[i]; if (i >= n) s -= v[i - n]; if (i >= n - 1) o[i] = s / n; } return o; };
+function indAll(k) {
+  const c = k.map((x) => x.c), n = c.length - 1, L = (a) => (a[n] == null ? null : a[n]), at = atr(k.map((x) => x.h), k.map((x) => x.l), c, 14), vs = k.slice(-22, -2).map((x) => x.v), va = vs.length ? vs.reduce((x, y) => x + y, 0) / vs.length : 0;
+  return { n: c.length, p: c[n], e50: L(ema(c, 50)), e200: L(ema(c, 200)), s50: L(sma(c, 50)), s200: L(sma(c, 200)), rsi: L(rsi(c, 14)), atr: L(at), volr: va > 0 && k.length > 1 ? k[n - 1].v / va : null };
+}
+const rsiTag = (r) => (r == null ? '-' : r >= 70 ? '<span class="dn">تشبع شرائي</span>' : r <= 30 ? '<span class="up">تشبع بيعي</span>' : `<span>محايد (${r >= 50 ? 'فوق' : 'تحت'} 50)</span>`);
+function indHtml(a, ty) {
+  const t = ty === 'sma' ? 's' : 'e', L = t === 's' ? 'SMA' : 'EMA';
+  const st = (m, nm) => (m == null ? row(nm, 'غير متاح (شموع غير كافية)') : row(nm + ' = ' + f(m, 6), `<span class="${a.p > m ? 'up' : 'dn'}">السعر ${a.p > m ? 'فوقه' : 'تحته'} (${sg(a.p - m)}${f(((a.p - m) / m) * 100, 2)}%)</span>`));
+  return `<div style="margin-top:8px">${st(a[t + '50'], L + ' 50')}${st(a[t + '200'], L + ' 200')}${row('RSI (14) = ' + f(a.rsi, 1), rsiTag(a.rsi))}${a.volr != null ? row('حجم آخر شمعة مغلقة', '×' + f(a.volr, 2) + ' من متوسط 20') : ''}</div>`;
+}
+async function scanSyms(list, iv, onProg) {
+  const out = []; let i = 0, done = 0;
+  const w = async () => { while (i < list.length) { const x = list[i++], key = x.s + '|' + iv, ch = ui.ic[key];
+    try { let a; if (ch && Date.now() - ch.t < 120000) a = ch.a; else { const k = await getK(x.s, iv, 300); if (k.length < 30) throw 0; a = indAll(k); ui.ic[key] = { t: Date.now(), a }; } if (a.atr) out.push({ ...x, a }); } catch (e) {}
+    done++; if (onProg) onProg(done, list.length); } };
+  await Promise.all(Array.from({ length: 6 }, w)); return out;
+}
+// ---- opportunity scanner ----
+const SCD = { iv: '1h', side: 'long', n: 60, ma: 'ema', c50: true, c200: true, cx: false, rmin: 50, rmax: 70, vmin: 1.2, chg: '', mv: 20 };
+const SC_PRE = { trend: { side: 'long', c50: true, c200: true, cx: true, rmin: 50, rmax: 70, vmin: 1.2, chg: '', mv: 20 }, bounce: { side: 'long', c50: false, c200: true, cx: false, rmin: 15, rmax: 35, vmin: 1, chg: '', mv: 20 }, down: { side: 'short', c50: true, c200: true, cx: true, rmin: 30, rmax: 50, vmin: 1.2, chg: '', mv: 20 } };
+function scCfg() { if (!ui.sc.cfg) { let l = {}; try { l = JSON.parse(localStorage.getItem('tic_sc') || '{}'); } catch (e) {} ui.sc.cfg = { ...SCD, ...l }; } return ui.sc.cfg; }
+const scSave = () => { try { localStorage.setItem('tic_sc', JSON.stringify(scCfg())); } catch (e) {} };
+function evalCond(x, c) {
+  const a = x.a, m = c.side === 'long' ? 1 : -1, t = c.ma === 'sma' ? 's' : 'e', m50 = a[t + '50'], m200 = a[t + '200'], ok = [], bad = [], up = m > 0 ? 'فوق' : 'تحت';
+  const chk = (on, pass, y, n) => { if (on) (pass ? ok : bad).push(pass ? y : n); }, has = (v) => v !== '' && v != null && isFinite(v);
+  chk(c.c50, m50 != null && m * (a.p - m50) > 0, `السعر ${up} MA50`, `السعر ليس ${up} MA50`);
+  chk(c.c200, m200 != null && m * (a.p - m200) > 0, `السعر ${up} MA200`, m200 == null ? 'MA200 غير متاح' : `السعر ليس ${up} MA200`);
+  chk(c.cx, m50 != null && m200 != null && m * (m50 - m200) > 0, `MA50 ${up} MA200`, `MA50 ليس ${up} MA200`);
+  const r = a.rsi; chk(has(c.rmin) || has(c.rmax), r != null && r >= (has(c.rmin) ? c.rmin : 0) && r <= (has(c.rmax) ? c.rmax : 100), `RSI ${f(r, 0)} ضمن النطاق`, `RSI ${f(r, 0)} خارج النطاق`);
+  chk(has(c.vmin) && c.vmin > 0, a.volr != null && a.volr >= c.vmin, `حجم ×${f(a.volr, 1)}`, `حجم ضعيف ×${f(a.volr, 1)}`);
+  chk(has(c.chg), m * x.c >= c.chg, `زخم 24س ${sg(x.c)}${f(x.c, 1)}%`, `زخم 24س ${f(x.c, 1)}%`);
+  return { pass: bad.length === 0 && ok.length > 0, ok, bad };
+}
+function scLevels(x, c) { const m = c.side === 'long' ? 1 : -1, r = 1.5 * x.a.atr, en = x.a.p; return { m, en, st: en - m * r, t1: en + m * r * 1.5, t2: en + m * r * 3, r }; }
+function scCard(x, c) {
+  const a = x.a, v = scLevels(x, c);
+  return `<div class="card idea ${v.m > 0 ? 'up' : 'dn'}"><div class="row"><b>${esc(x.s)} · ${SIDE[c.side]}</b><b class="num">${f(a.p, 6)} <span class="${cls(x.c)}">${sg(x.c)}${f(x.c, 1)}%</span></b></div>${indHtml(a, c.ma)}
+  <div style="margin-top:8px">${x.ev.ok.map((t) => `<span class="tag up">${t}</span>`).join(' ')} ${x.ev.bad.map((t) => `<span class="tag dn">${t}</span>`).join(' ')}</div>
+  <div style="margin-top:8px">${row('سبب الفرصة', x.ev.ok.length + ' شرط متحقق من ' + (x.ev.ok.length + x.ev.bad.length))}${row('دخول استرشادي', f(v.en, 6))}${row('وقف الخسارة (1.5 ATR)', f(v.st, 6), 'dn')}${row('الهدف 1 (1.5R)', f(v.t1, 6), 'up')}${row('الهدف 2 (3R)', f(v.t2, 6), 'up')}${row('R:R', '1 : 3', 'up')}${row('حجم 24س', bfmt(x.v) + ' $')}</div>
+  <div class="row" style="margin-top:8px"><button class="s" data-a="scidea2" data-s="${x.s}">＋ إلى الأفكار</button><button class="s" data-a="sctrade" data-s="${x.s}">＋ إلى الصفقات</button></div></div>`;
+}
+function scHtml() {
+  const r = ui.sc.res; if (!r) return ui.sc.busy ? '' : '<div class="card mut">اضغط «مسح الآن» لفحص العملات حسب الشروط.</div>';
+  const hit = r.items.filter((x) => x.ev.pass).sort((a, b) => b.v - a.v), near = r.items.filter((x) => !x.ev.pass && x.ev.bad.length === 1 && x.ev.ok.length).sort((a, b) => b.v - a.v).slice(0, 6);
+  ui.sc.map = {}; [...hit, ...near].forEach((x) => { ui.sc.map[x.s] = x; });
+  return `<div class="mut" style="font-size:12px">فُحصت ${r.got} من ${r.total} عملة · ${r.c.iv} · ${hms(r.t)} · المصدر ${esc(r.src)}${JSON.stringify(r.c) !== JSON.stringify(scCfg()) ? ' · <span class="warn">الشروط تغيّرت، أعد المسح</span>' : ''}</div>
+  <h2>تحققت الشروط (${hit.length})</h2>${hit.length ? `<div class="cards">${hit.map((x) => scCard(x, r.c)).join('')}</div>` : '<div class="card mut">لا عملة حققت كل الشروط الآن. خفّف شرطاً أو جرّب فاصلاً آخر.</div>'}
+  ${near.length ? `<h2>شبه مستوفية (شرط واحد ناقص)</h2><div class="cards">${near.map((x) => scCard(x, r.c)).join('')}</div>` : ''}`;
+}
+pages.scanner = () => {
+  if (!LIVE) return needLive();
+  const c = scCfg(), o = (a, cur, lab) => a.map((x) => `<option value="${x}" ${String(x) === String(cur) ? 'selected' : ''}>${lab ? lab[x] : x}</option>`).join(''), up = c.side === 'long' ? 'فوق' : 'تحت';
+  const ck = (k, t) => `<label class="ck"><input type="checkbox" data-sc="${k}" ${c[k] ? 'checked' : ''}>${t}</label>`, nm = (k, t, st) => `<label>${t}<input data-sc="${k}" type="number" inputmode="decimal" step="${st || 'any'}" value="${c[k] === '' ? '' : c[k]}"></label>`;
+  return `<div class="card"><div class="row"><b>شروط الدخول</b><span class="mut" style="font-size:12px">تُحفظ تلقائياً</span></div>${seg([['trend', 'اتجاه صاعد قوي'], ['bounce', 'ارتداد من تشبع بيعي'], ['down', 'اتجاه هابط']], '', 'scpre')}
+  <div class="gf"><label>الفاصل الزمني<select data-sc="iv">${o(['15m', '1h', '4h', '1d'], c.iv)}</select></label><label>الاتجاه<select data-sc="side">${o(['long', 'short'], c.side, SIDE)}</select></label><label>عدد العملات (الأعلى سيولة)<select data-sc="n">${o([30, 60, 100], c.n)}</select></label><label>نوع المتوسط<select data-sc="ma">${o(['ema', 'sma'], c.ma, { ema: 'EMA', sma: 'SMA' })}</select></label></div>
+  <div style="margin:8px 0">${ck('c50', `السعر ${up} المتوسط 50`)}${ck('c200', `السعر ${up} المتوسط 200`)}${ck('cx', `المتوسط 50 ${up} المتوسط 200`)}</div>
+  <div class="gf">${nm('rmin', 'RSI من')}${nm('rmax', 'RSI إلى')}${nm('vmin', 'الحجم ≥ (× متوسط 20 شمعة)')}${nm('chg', 'زخم 24س ≥ % (باتجاه الصفقة)')}${nm('mv', 'أدنى حجم 24س (مليون $)')}</div>
+  <button class="p" data-a="scan">مسح الآن</button></div><div id="sc-prog" class="mut"></div><div id="sc">${scHtml()}</div>
+  <div class="mut">يفحص أعلى العملات سيولة على Binance مع قائمة المتابعة. الوقف 1.5 ATR والأهداف 1.5R و3R مستويات استرشادية للتعليم وليست توصية.</div>`;
+};
+function scanInit() { loadUniverse(); if (!ui.sc.res && !ui.sc.busy && !ui.sc.auto) { ui.sc.auto = 1; act.scan(); } }
+// ---- movers / liquidity / RSI extremes ----
+function mvHtml() {
+  const u = ui.uni; if (!u) return '<div class="card mut">جارٍ تحميل بيانات السوق...</div>';
+  const rows = u.rows.filter((x) => x.v >= 5e6), li = (x, ex) => `<div class="li" data-a="wchart" data-s="${x.s}" style="cursor:pointer"><div style="flex:1"><b>${esc(x.s.replace('USDT', ''))}</b><div class="mut num">${f(x.p, 6)}</div></div>${ex}</div>`;
+  const chg = (x) => `<span class="num ${cls(x.c)}">${sg(x.c)}${f(x.c, 2)}%</span>`, note = `<div class="mut" style="font-size:12px;margin-top:6px">المصدر: ${esc(u.src)} · ${hms(u.t)} · أزواج USDT بحجم 24س ≥ 5M$. اضغط أي عملة لعرض مؤشراتها.</div>`;
+  if (ui.mv === 'gl') { const s = rows.slice().sort((a, b) => b.c - a.c); return `<div class="cols"><div><h2>الرابحون 24س</h2><div class="card">${s.slice(0, 15).map((x) => li(x, chg(x))).join('')}</div></div><div><h2>الخاسرون 24س</h2><div class="card">${s.slice(-15).reverse().map((x) => li(x, chg(x))).join('')}</div></div></div>` + note; }
+  if (ui.mv === 'act') return `<h2>الأكثر نشاطاً (حجم 24س)</h2><div class="card">${rows.slice().sort((a, b) => b.v - a.v).slice(0, 25).map((x) => li(x, `<div style="text-align:end"><b class="num">${bfmt(x.v)} $</b><div>${chg(x)}</div></div>`)).join('')}</div>` + note;
+  if (ui.mv === 'liq') { const s = rows.slice().sort((a, b) => b.v - a.v).slice(0, 20), mx = s[0] ? s[0].v : 1; return `<h2>أعلى سيولة (حصة من حجم USDT الكلي ${bfmt(u.tv)} $)</h2><div class="card">${s.map((x) => li(x, `<div style="min-width:46%"><div class="row"><b class="num">${bfmt(x.v)} $</b><span class="mut num">${f((x.v / u.tv) * 100, 1)}%</span></div><div class="bar risk good"><i style="width:${(x.v / mx) * 100}%"></i></div></div>`)).join('')}</div>` + note; }
+  const R = ui.mvR && ui.mvR.iv === ui.mvI ? ui.mvR : null, sel = `<label style="max-width:200px">الفاصل الزمني<select id="mv-i">${['15m', '1h', '4h', '1d'].map((x) => `<option ${x === ui.mvI ? 'selected' : ''}>${x}</option>`).join('')}</select></label>`;
+  if (!R) return sel + '<div id="mv-prog" class="mut" style="margin-top:8px">جارٍ حساب RSI لأعلى 60 عملة سيولة...</div>';
+  const ob = R.items.filter((x) => x.a.rsi >= 70).sort((a, b) => b.a.rsi - a.a.rsi).slice(0, 15), os = R.items.filter((x) => x.a.rsi <= 30).sort((a, b) => a.a.rsi - b.a.rsi).slice(0, 15), rl = (x) => li(x, `<div style="text-align:end"><b class="num ${x.a.rsi >= 70 ? 'dn' : 'up'}">RSI ${f(x.a.rsi, 1)}</b><div>${chg(x)}</div></div>`);
+  return sel + `<div class="cols"><div><h2>تشبع شرائي (≥ 70)</h2><div class="card">${ob.map(rl).join('') || '<span class="mut">لا عملات.</span>'}</div></div><div><h2>تشبع بيعي (≤ 30)</h2><div class="card">${os.map(rl).join('') || '<span class="mut">لا عملات.</span>'}</div></div></div><div class="mut" style="font-size:12px">فُحصت ${R.items.length} عملة على ${R.iv} · ${hms(R.t)}</div>`;
+}
+pages.movers = () => (!LIVE ? needLive() : mktBar() + seg([['gl', 'الرابحون والخاسرون'], ['act', 'الأكثر نشاطاً'], ['liq', 'السيولة'], ['rsi', 'تشبع RSI']], ui.mv, 'mvtab') + `<div id="mv">${mvHtml()}</div>`);
+function paintMv() { if (ui.page !== 'movers' || ui.mv === 'rsi' || !ui.uni) return; const e = $('#mv'); if (e && ui.mvT !== ui.uni.t) { ui.mvT = ui.uni.t; e.innerHTML = mvHtml(); } }
+async function rsiRun() {
+  const iv = ui.mvI, u = await loadUniverse(); if (!u || ui.mvBusy) return;
+  if (!(ui.mvR && ui.mvR.iv === iv && Date.now() - ui.mvR.t < 180000)) {
+    ui.mvBusy = 1; const top = u.rows.filter((x) => x.v >= 5e6).sort((a, b) => b.v - a.v).slice(0, 60);
+    try { const items = await scanSyms(top, iv, (d, t) => { const e = $('#mv-prog'); if (e) e.textContent = `جارٍ حساب RSI ${d} من ${t}...`; }); ui.mvR = { iv, t: Date.now(), items }; } catch (e) {}
+    ui.mvBusy = 0;
+  }
+  if (ui.page === 'movers' && ui.mv === 'rsi') { const e = $('#mv'); if (e) e.innerHTML = mvHtml(); }
+}
+function mvInit() { loadGlobal(); if (ui.mv === 'rsi') rsiRun(); }
+// ---- economic calendar + news ----
+const CAL_URLS = ['https://nfs.faireconomy.media/ff_calendar_thisweek.json', 'https://nfs.faireconomy.media/ff_calendar_nextweek.json'];
+const CAL_PROXY = [(u) => 'https://api.allorigins.win/raw?url=' + encodeURIComponent(u), (u) => 'https://corsproxy.io/?url=' + encodeURIComponent(u)];
+const CAL_AR = [[/Federal Funds Rate|Interest Rate|Rate Statement/i, 'قرار الفائدة'], [/FOMC/i, 'اجتماع الفيدرالي FOMC'], [/Core CPI/i, 'التضخم الأساسي CPI'], [/CPI/i, 'مؤشر أسعار المستهلك CPI'], [/PPI/i, 'أسعار المنتجين PPI'], [/PCE/i, 'مؤشر PCE'], [/Non-Farm|NFP/i, 'الوظائف غير الزراعية'], [/Unemployment Rate/i, 'معدل البطالة'], [/Jobless Claims/i, 'طلبات إعانة البطالة'], [/GDP/i, 'الناتج المحلي GDP'], [/Retail Sales/i, 'مبيعات التجزئة'], [/ISM|PMI/i, 'مؤشر مديري المشتريات'], [/Speaks|Testifies/i, 'تصريحات'], [/Auction/i, 'مزاد سندات']];
+const calAr = (t) => { const m = CAL_AR.find((x) => x[0].test(t)); return m ? m[1] : ''; };
+const CAL_LINKS = [['ForexFactory', 'https://www.forexfactory.com/calendar'], ['Investing.com', 'https://sa.investing.com/economic-calendar/'], ['TradingEconomics', 'https://tradingeconomics.com/calendar'], ['CoinMarketCal', 'https://coinmarketcal.com/en/'], ['جدول الفيدرالي FOMC', 'https://www.federalreserve.gov/monetarypolicy/fomccalendars.htm'], ['جدول BLS للتضخم والوظائف', 'https://www.bls.gov/schedule/news_release/']];
+async function fetchCalUrl(u) { try { return await tmo(u, 8000); } catch (e) {} for (const p of CAL_PROXY) { try { const d = await tmo(p(u), 10000); if (Array.isArray(d)) return d; } catch (e) {} } return null; }
+async function loadCal(force) {
+  if (!LIVE) return;
+  const c = ui.cal; if (!c.ev) { try { const l = JSON.parse(localStorage.getItem('tic_cal') || 'null'); if (l) { c.ev = l.ev; c.t = l.t; } } catch (e) {} }
+  paintCal(); const now = Date.now();
+  if (c.busy || (!force && ((c.t && now - c.t < 1800000) || (c.fail && now - c.fail < 60000)))) return;
+  c.busy = 1; paintCal();
+  const r = await Promise.all(CAL_URLS.map(fetchCalUrl)), ev = r.flatMap((x) => (Array.isArray(x) ? x : []));
+  if (ev.length) { c.ev = ev; c.t = Date.now(); c.fail = 0; try { localStorage.setItem('tic_cal', JSON.stringify({ t: c.t, ev })); } catch (e) {} } else c.fail = Date.now();
+  c.busy = 0; paintCal();
+}
+async function loadNews(force) {
+  if (!LIVE) return; const c = ui.cal;
+  if (!c.news) { try { const l = JSON.parse(localStorage.getItem('tic_nw') || 'null'); if (l) { c.news = l.n; c.nt = l.t; } } catch (e) {} }
+  paintNews(); if (c.nbusy || (!force && c.nt && Date.now() - c.nt < 300000) || (c.nfail && Date.now() - c.nfail < 60000)) return;
+  c.nbusy = 1;
+  try { const d = (await tmo('https://min-api.cryptocompare.com/data/v2/news/?lang=EN', 9000)).Data.slice(0, 12).map((x) => ({ t: x.title, u: x.url, s: x.source_info && x.source_info.name || x.source, p: x.published_on * 1000 })); c.news = d; c.nt = Date.now(); c.nfail = 0; try { localStorage.setItem('tic_nw', JSON.stringify({ t: c.nt, n: d })); } catch (e) {} } catch (e) { c.nfail = Date.now(); }
+  c.nbusy = 0; paintNews();
+}
+function calBox() {
+  const c = ui.cal, ev = c.ev || [], rank = { High: 3, Medium: 2, Low: 1, Holiday: 0 }, minR = c.imp === 'high' ? 3 : c.imp === 'med' ? 2 : 0, day0 = new Date().setHours(0, 0, 0, 0), now = Date.now();
+  const flt = (k, items) => `<div class="seg">${items.map(([v, t]) => `<button class="${c[k] === v ? 'on' : ''}" data-a="calf" data-f="${k}" data-k="${v}">${t}</button>`).join('')}</div>`;
+  const list = ev.filter((e) => (c.cur === 'all' || e.country === c.cur) && (rank[e.impact] ?? 0) >= minR).map((e) => ({ ...e, ts: Date.parse(e.date) })).filter((e) => isFinite(e.ts) && e.ts >= day0).sort((a, b) => a.ts - b.ts);
+  const days = {}; list.forEach((e) => { const k = new Date(e.ts).toLocaleDateString('ar-u-nu-latn', { weekday: 'long', day: 'numeric', month: 'long' }); (days[k] = days[k] || []).push(e); });
+  const IMP = { High: ['dn', 'عالية'], Medium: ['warn', 'متوسطة'], Low: ['mut', 'منخفضة'], Holiday: ['mut', 'عطلة'] };
+  const cd = (ts) => { const m = Math.round((ts - now) / 60000); return m <= 0 || m > 1440 ? '' : ' · بعد ' + (m >= 60 ? Math.floor(m / 60) + 'س ' : '') + (m % 60) + 'د'; };
+  const body = Object.entries(days).map(([d, a]) => `<h2>${d}</h2><div class="card">${a.map((e) => { const im = IMP[e.impact] || IMP.Low, ar = calAr(e.title); return `<div class="li" style="opacity:${e.ts < now ? 0.55 : 1}"><div class="num" style="min-width:50px"><b>${new Date(e.ts).toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' })}</b></div><div style="flex:1"><b>${esc(ar || e.title)}</b><div class="mut" style="font-size:12px">${esc(e.country)}${ar ? ' · ' + esc(e.title) : ''}${e.forecast ? ' · متوقع ' + esc(e.forecast) : ''}${e.previous ? ' · سابق ' + esc(e.previous) : ''}${cd(e.ts)}</div></div><span class="tag ${im[0]}">${im[1]}</span></div>`; }).join('')}</div>`).join('');
+  const status = ev.length ? `<div class="mut" style="font-size:12px">المصدر: ForexFactory (عبر faireconomy) · آخر تحديث ${c.t ? hms(c.t) : '-'} · التوقيت حسب جهازك${c.fail ? ' · <span class="warn">تعذر التحديث الآن، يُعرض آخر ما حُفظ</span>' : ''}${c.busy ? ' · جارٍ التحديث...' : ''}</div>` : c.busy ? '<div class="card mut">جارٍ جلب التقويم...</div>' : '<div class="card"><b class="warn">تعذر جلب التقويم تلقائياً</b><p class="mut">قد يحجب المتصفح أو الشبكة الوصول المباشر إلى المصدر. استخدم الروابط أدناه، وسيُحفظ آخر تقويم يُجلب بنجاح لعرضه لاحقاً.</p></div>';
+  return flt('cur', [['USD', 'الدولار USD'], ['all', 'كل العملات']]) + flt('imp', [['high', 'عالية فقط'], ['med', 'متوسطة وأعلى'], ['all', 'الكل']]) + status + (ev.length ? body || '<div class="card mut">لا أحداث مطابقة للفلاتر في الأسبوعين الحاليين.</div>' : '');
+}
+function newsBox() {
+  const c = ui.cal; if (!c.news) return c.nbusy ? '<span class="mut">جارٍ التحميل...</span>' : '<span class="mut">تعذر تحميل الأخبار حالياً. استخدم CoinMarketCal من الروابط.</span>';
+  return c.news.map((n) => `<div class="li"><div style="flex:1"><a class="lk" href="${esc(n.u)}" target="_blank" rel="noopener noreferrer"><b>${esc(n.t)}</b></a><div class="mut" style="font-size:12px">${esc(n.s || '')} · ${hms(n.p)} ${new Date(n.p).toLocaleDateString('en-GB')}</div></div></div>`).join('') + `<div class="mut" style="font-size:12px;margin-top:6px">المصدر: CryptoCompare · آخر تحديث ${hms(c.nt)}</div>`;
+}
+const paintCal = () => { const e = $('#calbox'); if (e) e.innerHTML = calBox(); };
+const paintNews = () => { const e = $('#newsbox'); if (e) e.innerHTML = newsBox(); };
+pages.calendar = () => (!LIVE ? needLive() : `<div class="row" style="margin-bottom:6px"><span class="mut">أحداث اقتصادية مؤثرة على الدولار والكريبتو</span><button class="s" data-a="calref">تحديث</button></div><div id="calbox">${calBox()}</div><h2 style="margin-top:14px">أخبار السوق</h2><div class="card" id="newsbox">${newsBox()}</div><h2>مصادر موثوقة</h2><div class="card"><div class="lks">${CAL_LINKS.map((l) => `<a class="lk" href="${l[1]}" target="_blank" rel="noopener noreferrer">${l[0]} ›</a>`).join('')}</div></div><div class="mut">للمعلومة فقط وليست نصيحة استثمارية. تواريخ الأحداث قد تتغير، تحقق من المصدر.</div>`);
+function calInit() { loadCal(); loadNews(); }
+// ---- actions ----
+Object.assign(act, {
+  async scan() {
+    if (!LIVE || ui.sc.busy) return; ui.sc.busy = true; const c = { ...scCfg() }, prog = (t) => { const e = $('#sc-prog'); if (e) e.textContent = t; };
+    prog('جارٍ تحميل قائمة العملات...');
+    try {
+      const u = await loadUniverse(); if (!u) throw 0; const byS = new Map(u.rows.map((x) => [x.s, x]));
+      const top = u.rows.filter((x) => x.v >= (c.mv || 0) * 1e6).sort((a, b) => b.v - a.v).slice(0, c.n), set = new Set(top.map((x) => x.s));
+      S.watch.forEach((w) => { if (!set.has(w.symbol) && byS.has(w.symbol)) { top.push(byS.get(w.symbol)); set.add(w.symbol); } });
+      const res = await scanSyms(top, c.iv, (d, t) => prog(`جارٍ فحص ${d} من ${t} عملة...`));
+      ui.sc.res = { c, t: Date.now(), total: top.length, got: res.length, src: u.src, items: res.map((x) => ({ ...x, ev: evalCond(x, c) })) }; prog('');
+    } catch (e) { prog('تعذر تحميل بيانات السوق. تحقق من الاتصال ثم أعد المحاولة.'); }
+    ui.sc.busy = false; const b = $('#sc'); if (b) b.innerHTML = scHtml();
+  },
+  scpre(d) { Object.assign(scCfg(), SC_PRE[d.k]); scSave(); render(); },
+  scidea2(d) {
+    const x = ui.sc.map && ui.sc.map[d.s], c = ui.sc.res && ui.sc.res.c; if (!x || !c) return; const v = scLevels(x, c);
+    S.ideas.unshift({ kind: 'idea', id: nid(), symbol: x.s, tf: c.iv, side: c.side, entry: pr6(v.en), stop: pr6(v.st), tps: [pr6(v.t1), pr6(v.t2)], sizeMode: 'qty', qty: 0, usd: 0, strategy: 'MA/RSI Scanner', reason: 'ماسح الفرص: ' + x.ev.ok.join('، '), note: '', status: 'pending', at: Date.now() });
+    persist(); notify('أُضيفت فكرة ' + x.s + ' إلى الأفكار');
+  },
+  sctrade(d) {
+    const x = ui.sc.map && ui.sc.map[d.s], c = ui.sc.res && ui.sc.res.c; if (!x || !c) return; const v = scLevels(x, c), q = pr6(((S.set.balance || 1000) * 0.01) / v.r);
+    openSheet({ symbol: x.s, tf: c.iv, side: c.side, status: 'pending', sizeMode: 'qty', entry: pr6(v.en), stop: pr6(v.st), tps: [pr6(v.t1), pr6(v.t2)], qty: q, usd: pr6(q * v.en), strategy: 'MA/RSI Scanner', reason: 'ماسح الفرص: ' + x.ev.ok.join('، '), notes: '', fees: 0, openedAt: Date.now() });
+  },
+  mvtab(d) { ui.mv = d.k; render(); },
+  wchart(d) { ui.ch.s = d.s; go(() => { ui.page = 'charts'; }, true); },
+  calf(d) { ui.cal[d.f] = d.k; paintCal(); },
+  calref() { loadCal(true); loadNews(true); },
+  glref() { loadGlobal(true); loadUniverse(true).then(() => { paintGlobal(); paintMv(); }); },
+});
+document.addEventListener('change', (e) => {
+  const t = e.target, k = t.dataset && t.dataset.sc;
+  if (t.id === 'mv-i') { ui.mvI = t.value; const m = $('#mv'); if (m) m.innerHTML = mvHtml(); rsiRun(); return; }
+  if (!k) return; const c = scCfg();
+  c[k] = t.type === 'checkbox' ? t.checked : t.tagName === 'SELECT' ? (k === 'n' ? +t.value : t.value) : (t.value === '' || isNaN(num(t.value)) ? '' : num(t.value));
+  scSave(); if (t.tagName === 'SELECT' && (k === 'side' || k === 'ma')) render(); else { const b = $('#sc'); if (b && ui.sc.res) b.innerHTML = scHtml(); }
+});
+
 applyTheme(); render();
 if (LIVE) { tick(true); setInterval(() => { if (document.visibilityState === 'visible') tick(); }, 5000); addEventListener('online', () => tick(true)); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') tick(true); }); }
 setInterval(() => { if (ui.tab === 'home' && !ui.page && $('#sheet').hidden) render(); }, 60000);
@@ -839,7 +1086,7 @@ const sheetTop = (t) => `<div class="sbar"><button class="s back" data-a="cancel
 function go(mut, top) {
   scrollMap[curKey()] = window.scrollY; mut();
   const st = snap(); if (stKey(history.state) !== stKey(st)) history.pushState(st, '');
-  render(); window.scrollTo(0, top ? 0 : (scrollMap[curKey()] || 0));
+  render(); restoreY(top ? 0 : (scrollMap[curKey()] || 0));
 }
 function showSheet(s) { if (s.hidden) history.pushState({ ...snap(), sh: 1 }, ''); s.hidden = false; s.scrollTop = 0; }
 function closeSheet(after) {
@@ -849,10 +1096,14 @@ function closeSheet(after) {
 addEventListener('popstate', (e) => {
   const st = e.state || { t: 'home', p: null, s: null }, s = $('#sheet'), fn = pend; pend = null;
   if (!s.hidden) { form = null; ui.ideaForm = null; s.hidden = true; }
-  if (stKey(st) !== curKey()) { scrollMap[curKey()] = window.scrollY; ui.tab = st.t; ui.page = st.p; ui.soon = st.s; render(); window.scrollTo(0, scrollMap[curKey()] || 0); }
+  if (stKey(st) !== curKey()) { scrollMap[curKey()] = window.scrollY; ui.tab = st.t; ui.page = st.p; ui.soon = st.s; render(); restoreY(scrollMap[curKey()] || 0); }
   else if (!fn) render();
   if (fn) fn();
 });
+function restoreY(y) { window.scrollTo(0, y); ui.pendY = y > 0 ? y : null; clearTimeout(ui.pyT); ui.pyT = setTimeout(() => { ui.pendY = null; }, 6000); }
+function settle() { if (ui.pendY != null && document.documentElement.scrollHeight - innerHeight >= ui.pendY - 1) { window.scrollTo(0, ui.pendY); ui.pendY = null; } }
+new MutationObserver(settle).observe($('#v'), { childList: true, subtree: true });
+['wheel', 'touchstart', 'keydown'].forEach((n) => addEventListener(n, () => { ui.pendY = null; }, { passive: true }));
 history.replaceState(snap(), '');
 setInterval(updateLive, 2000);
 Object.assign(act, {
