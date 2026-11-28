@@ -115,6 +115,28 @@ a.lk{color:var(--ac);text-decoration:none}a.lk:hover{text-decoration:underline}
 <div id="toast" class="toast" hidden></div>
 <input id="bg-file" type="file" accept="image/*" hidden>
 <script>
+const TELEGRAM_TOKEN = '9091001445:AAG88Do8bIIVRAEKoR9WpjlAfyxYR0JlNOg';
+const TELEGRAM_CHAT_ID = '7057955646';
+const tgSentKeys = new Set();
+
+function sendTelegramAlert(message, dedupKey) {
+  if (!TELEGRAM_TOKEN || !TELEGRAM_CHAT_ID || !message) return;
+  if (dedupKey) {
+    if (tgSentKeys.has(dedupKey)) return;
+    tgSentKeys.add(dedupKey);
+  }
+  const url = `https://api.telegram.org/bot${TELEGRAM_TOKEN}/sendMessage`;
+  fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      chat_id: TELEGRAM_CHAT_ID,
+      text: message,
+      parse_mode: 'HTML'
+    })
+  }).catch(error => console.error('خطأ في تيليجرام:', error));
+}
+
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const f = (x, d = 2) => (x == null || !isFinite(x) ? '-' : Number(x).toLocaleString('en', { maximumFractionDigits: d }));
@@ -644,7 +666,7 @@ function sheetHtml(t) {
   <label>الحالة<select id="f-status">${Object.entries(STAT).map(([k, v]) => `<option value="${k}" ${t.status === k ? 'selected' : ''}>${v}</option>`).join('')}</select></label>
   <label>سعر الدخول<input id="f-en" type="number" inputmode="decimal" step="any" value="${t.entry || ''}"></label>
   <label>وقف الخسارة<input id="f-st" type="number" inputmode="decimal" step="any" value="${t.stop || ''}"></label></div>
-  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
+  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT', 'CLOUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
   <div class="card" style="margin-top:8px"><div class="row"><b>الأهداف</b><button class="s" data-a="addtp">+ هدف</button></div><div class="grid g3" id="tps">${tps}</div></div>
   <div class="card"><b>حجم الصفقة</b><div class="seg"><button class="${t.sizeMode === 'qty' ? 'on' : ''}" data-a="smode" data-k="qty">الكمية</button><button class="${t.sizeMode === 'usd' ? 'on' : ''}" data-a="smode" data-k="usd">الدولار USD</button></div>
   <div class="grid"><label id="f-sl">${t.sizeMode === 'usd' ? 'الحجم (USD)' : 'الكمية (وحدات)'}<input id="f-size" type="number" inputmode="decimal" step="any" value="${(t.sizeMode === 'usd' ? t.usd : t.qty) || ''}"></label>
@@ -701,25 +723,67 @@ const act = {
   sub(d) { ui.sub = d.k; render(); }, filter(d) { ui.filter = d.k; render(); },
   add() { openSheet(null); }, cancel() { form = null; $('#sheet').hidden = true; },
   edit(d) { openSheet({ ...S.trades.find((t) => t.id === d.id) }); },
-  addtp() { const i = document.createElement('input'); i.className = 'tp'; i.type = 'number'; i.inputMode = 'decimal'; i.step = 'any'; $('#tps').appendChild(i); },
+  addtp() { const i = document.createElement('input'); i.className = 'tp'; i.type = 'number'; i.inputmode = 'decimal'; i.step = 'any'; $('#tps').appendChild(i); },
   smode(d) { const cur = readForm(), en = cur.entry > 0 ? cur.entry : null, sz = num($('#f-size').value);
     if (en && sz > 0) $('#f-size').value = f(d.k === 'usd' ? sz * en : sz / en, 8).replace(/,/g, '');
     form = { ...form, sizeMode: d.k }; $$('[data-a="smode"]').forEach((b) => b.classList.toggle('on', b.dataset.k === d.k)); $('#f-sl').firstChild.textContent = d.k === 'usd' ? 'الحجم (USD)' : 'الكمية (وحدات)'; preview(); },
-  save() { const t = readForm(), er = validate(t); if (er) { $('#f-err').textContent = er; return; }
+  save() {
+    const t = readForm(), er = validate(t); if (er) { $('#f-err').textContent = er; return; }
     if (t.status === 'closed' && !t.closedAt) t.closedAt = Date.now();
-    if (!t.id) { t.id = Date.now().toString(36); S.trades.unshift(t); } else S.trades = S.trades.map((x) => (x.id === t.id ? t : x));
-    persist('save_trade'); closeSheet(() => render()); },
-  close(d) { const v = num($('#x-' + d.id).value); if (!(v > 0)) return; S.trades = S.trades.map((t) => (t.id === d.id ? { ...t, exit: v, status: 'closed', closedAt: Date.now() } : t)); persist('close_trade'); render(); },
+    const isNew = !t.id;
+    const prevTrade = !isNew ? S.trades.find((x) => x.id === t.id) : null;
+    if (isNew) { t.id = Date.now().toString(36); S.trades.unshift(t); } else S.trades = S.trades.map((x) => (x.id === t.id ? t : x));
+    if (isNew && t.status === 'pending') {
+      const symbol = t.symbol, direction = SIDE[t.side], entry_price = f(t.entry, 6), stop_loss = f(t.stop, 6);
+      sendTelegramAlert(`💡 <b>فكرة صفقة جديدة (معلقة):</b>\nالعملة: <code>${symbol}</code>\nالاتجاه: ${direction}\nسعر الدخول: ${entry_price}\nوقف الخسارة: ${stop_loss}`, `tr_pend_${t.id}`);
+    } else if (!isNew && prevTrade && prevTrade.status !== 'open' && t.status === 'open') {
+      sendTelegramAlert(`🚀 <b>تم تفعيل الصفقة (نشطة):</b>\nالعملة: <code>${t.symbol}</code>\nالاتجاه: ${SIDE[t.side]}\nسعر الدخول: ${f(t.entry, 6)}`, `tr_open_${t.id}_${Date.now()}`);
+    }
+    if (t.status === 'closed' && t.exit != null) {
+      const c = calc(t), symbol = t.symbol, total_pnl = f(c.pnl, 2);
+      sendTelegramAlert(`✅ <b>تم إغلاق الصفقة بنجاح:</b>\nالعملة: <code>${symbol}</code>\nسعر الخروج: ${f(t.exit, 6)}\nالربح الإجمالي: ${total_pnl}$`, `tr_close_${t.id}_${t.closedAt}`);
+    }
+    persist('save_trade'); closeSheet(() => render());
+  },
+  close(d) {
+    const v = num($('#x-' + d.id).value); if (!(v > 0)) return;
+    let closedTrade = null;
+    S.trades = S.trades.map((t) => {
+      if (t.id !== d.id) return t;
+      closedTrade = { ...t, exit: v, status: 'closed', closedAt: Date.now() };
+      return closedTrade;
+    });
+    if (closedTrade) {
+      const c = calc(closedTrade), symbol = closedTrade.symbol, total_pnl = f(c.pnl, 2);
+      sendTelegramAlert(`✅ <b>تم إغلاق الصفقة بنجاح:</b>\nالعملة: <code>${symbol}</code>\nسعر الخروج: ${f(v, 6)}\nالربح الإجمالي: ${total_pnl}$`, `tr_close_${closedTrade.id}_${closedTrade.closedAt}`);
+    }
+    persist('close_trade'); render();
+  },
   del(d) { if (ui.del === d.id) { S.trades = S.trades.filter((t) => t.id !== d.id); ui.del = null; persist('del_trade'); } else ui.del = d.id; render(); },
   iadd() { const g = (i) => $('#' + i).value, t = { kind: 'idea', symbol: g('i-sym').trim().toUpperCase(), side: g('i-side'), entry: num(g('i-en')), stop: num(g('i-st')), tps: [num(g('i-t1')), num(g('i-t2'))].filter((x) => x > 0) };
     const er = validate(t); if (er) { $('#i-err').textContent = er; return; }
-    S.ideas.unshift({ ...t, id: Date.now().toString(36), status: 'pending', tpi: 0, events: [], note: g('i-note').trim().slice(0, 300), at: Date.now() }); persist('add_idea'); render(); },
+    const newId = Date.now().toString(36);
+    S.ideas.unshift({ ...t, id: newId, status: 'pending', tpi: 0, events: [], note: g('i-note').trim().slice(0, 300), at: Date.now() });
+    const symbol = t.symbol, direction = SIDE[t.side], entry_price = f(t.entry, 6), stop_loss = f(t.stop, 6);
+    sendTelegramAlert(`💡 <b>فكرة صفقة جديدة (معلقة):</b>\nالعملة: <code>${symbol}</code>\nالاتجاه: ${direction}\nسعر الدخول: ${entry_price}\nوقف الخسارة: ${stop_loss}`, `idea_new_${newId}`);
+    persist('add_idea'); render(); },
   istat(d) {
     const now = Date.now();
     S.ideas = S.ideas.map((i) => {
       if (i.id !== d.id) return i;
       const px = ui.prices[i.symbol] || i.cur || i.entry;
       const evs = [...(i.events || []), { type: 'manual_' + d.k, label: 'تحديث الحالة إلى: ' + ISTAT[d.k], price: px, at: now }];
+      const symbol = i.symbol;
+      if (d.k === 'active') {
+        const entry_price = f(i.entry, 6);
+        sendTelegramAlert(`🚀 <b>تم تفعيل الصفقة (نشطة):</b>\nالعملة: <code>${symbol}</code>\nسعر الدخول: ${entry_price}`, `idea_act_${i.id}_${now}`);
+      } else if (d.k === 'stopped') {
+        const loss_amount = f(Math.abs(ideaR({ ...i, status: 'stopped' })), 2) + 'R';
+        sendTelegramAlert(`🛑 <b>تم ضرب وقف الخسارة:</b>\nالعملة: <code>${symbol}</code>\nالخسارة: ${loss_amount}$`, `idea_stp_${i.id}_${now}`);
+      } else if (d.k === 'target') {
+        const total_pnl = f(ideaR({ ...i, status: 'target' }), 2) + 'R';
+        sendTelegramAlert(`✅ <b>تم إغلاق الصفقة بنجاح:</b>\nالعملة: <code>${symbol}</code>\nالربح الإجمالي: ${total_pnl}$`, `idea_tgt_${i.id}_${now}`);
+      }
       return { ...i, status: d.k, resR: null, events: evs };
     });
     persist('idea_status'); render();
@@ -762,7 +826,7 @@ const act = {
   reset() { if (ui.del === 'all') { saveSnapshot('before_reset'); S.trades = []; S.ideas = []; ui.del = null; persist(); } else ui.del = 'all'; render(); },
   chip(d) { ask(d.k); },
   ask() { const q = $('#q'); if (q.value.trim()) { ask(q.value.trim()); q.value = ''; } },
-  evalnow() { if (!LIVE) { notify('التتبع المباشر يعمل خارج Claude على الرابط العام'); return; } tick(true); notify('جاري فحص الأسعار والشموع للأفكار...'); },
+  evalnow() { if (!LIVE) { notify('التتبع المباشر يعمل خارج Claude على الرابط العام'); return; } tick(true); notify('جاري فحص الأسعار والشموع للأفكار والتنبيهات...'); },
 };
 document.addEventListener('click', (e) => { const b = e.target.closest('[data-a]'); if (b && act[b.dataset.a]) act[b.dataset.a](b.dataset, b); });
 document.addEventListener('input', (e) => {
@@ -796,7 +860,7 @@ Object.assign(ui, { page: null, soon: null, q: '', hist: false, open: null, idea
 Object.assign(ui.c, { cs: 1000, cr: 5, cm: 12, ca: '', cp: '' });
 const LIVE = typeof claude === 'undefined';
 const BN = 'https://api.binance.com', BF = 'https://fapi.binance.com';
-const DEFAULT_SYMS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT'];
+const DEFAULT_SYMS = ['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'CLOUSDT'];
 Object.assign(ui, { prices: {}, valid: null, live: 0, pmeta: {}, fail: {}, kh: {}, ic: {}, mv: 'gl', mvI: '1h', cal: { cur: 'USD', imp: 'med' }, nf: {}, conn: { ok: false, src: null, t: 0 }, lastEval: 0, ch: { s: 'BTCUSDT', i: '1h' }, sc: { i: '1h', sym: '', single: null }, scan: {} });
 const jget = async (u) => { const r = await fetch(u); if (!r.ok) throw new Error('http ' + r.status); return r.json(); };
 const symQ = (a) => encodeURIComponent(JSON.stringify(a));
@@ -821,6 +885,23 @@ function addIdeaEvent(s, type, label, price, at) {
   s.events = Array.isArray(s.events) ? [...s.events] : [];
   if (!s.events.some((ev) => ev.type === type)) {
     s.events.push({ type, label, price, at: at || Date.now() });
+    const symbol = s.symbol;
+    if (type === 'entry_hit') {
+      const entry_price = f(s.entry, 6);
+      sendTelegramAlert(`🚀 <b>تم تفعيل الصفقة (نشطة):</b>\nالعملة: <code>${symbol}</code>\nسعر الدخول: ${entry_price}`, `${s.id}_entry_hit`);
+    } else if (type === 'tp_1') {
+      const tp1_price = f(price, 6);
+      sendTelegramAlert(`🎯 <b>تم تحقق الهدف الأول (TP1):</b>\nالعملة: <code>${symbol}</code>\nالسعر: ${tp1_price}`, `${s.id}_tp_1`);
+    } else if (type === 'trail_move_1') {
+      const new_stop_loss = f(s.trailingStop, 6);
+      sendTelegramAlert(`🛡️ <b>تم تأمين الصفقة (نقل الوقف للدخول):</b>\nالعملة: <code>${symbol}</code>\nالوقف الجديد: ${new_stop_loss}`, `${s.id}_trail_move_1`);
+    } else if (type === 'tp_2') {
+      const tp2_price = f(price, 6);
+      sendTelegramAlert(`🏆 <b>تم تحقق الهدف الثاني (TP2):</b>\nالعملة: <code>${symbol}</code>\nالسعر: ${tp2_price}`, `${s.id}_tp_2`);
+    } else if (type === 'stop_hit' || type === 'trailing_hit') {
+      const loss_amount = f(Math.abs(s.resR || 1), 2) + 'R';
+      sendTelegramAlert(`🛑 <b>تم ضرب وقف الخسارة:</b>\nالعملة: <code>${symbol}</code>\nالخسارة: ${loss_amount}$`, `${s.id}_${type}`);
+    }
   }
 }
 
@@ -856,6 +937,8 @@ function stepIdea(i, c) {
         if (s.tpi === s.tps.length - 1) {
           s.status = 'target';
           s.resR = Math.abs(tpPrice - s.entry) / Math.abs(s.entry - s.stop);
+          const symbol = s.symbol, total_pnl = f(s.resR, 2) + 'R';
+          sendTelegramAlert(`✅ <b>تم إغلاق الصفقة بنجاح:</b>\nالعملة: <code>${symbol}</code>\nالربح الإجمالي: ${total_pnl}$`, `${s.id}_closed_target`);
           return s;
         }
         s.tpi++;
@@ -903,6 +986,8 @@ function stepIdeaLivePrice(i, px) {
         if (s.tpi === s.tps.length - 1) {
           s.status = 'target';
           s.resR = Math.abs(tpPrice - s.entry) / Math.abs(s.entry - s.stop);
+          const symbol = s.symbol, total_pnl = f(s.resR, 2) + 'R';
+          sendTelegramAlert(`✅ <b>تم إغلاق الصفقة بنجاح:</b>\nالعملة: <code>${symbol}</code>\nالربح الإجمالي: ${total_pnl}$`, `${s.id}_closed_target`);
           break;
         }
         s.tpi++;
@@ -926,15 +1011,38 @@ function notify(msg) {
   try { navigator.vibrate && navigator.vibrate(200); } catch (e) {}
   try { if ('Notification' in window && Notification.permission === 'granted' && navigator.serviceWorker) navigator.serviceWorker.ready.then((r) => r.showNotification('دفتر صفقات الكريبتو', { body: msg })); } catch (e) {}
 }
+
 function checkAlerts() {
   let ch = false;
   S.alerts.forEach((a) => {
-    if (a.fired) return; const p = ui.prices[a.symbol]; if (!(p > 0)) return;
-    const up = a.lp != null && a.lp < a.level && p >= a.level, dn = a.lp != null && a.lp > a.level && p <= a.level; a.lp = p; ch = true;
-    if ((a.dir === 'up' && up) || (a.dir === 'down' && dn)) { a.fired = true; a.firedAt = Date.now(); notify(a.symbol + ' وصل إلى ' + f(a.level, 6)); }
+    if (a.fired) return;
+    const p = ui.prices[a.symbol];
+    if (!(p > 0)) return;
+
+    const upHit = a.dir === 'up' && p >= a.level;
+    const dnHit = a.dir === 'down' && p <= a.level;
+    a.lp = p;
+    ch = true;
+
+    if (upHit || dnHit) {
+      a.fired = true;
+      a.firedAt = Date.now();
+      const arrow = a.dir === 'up' ? '↑' : '↓';
+      const dirLabel = a.dir === 'up' ? 'صعود إلى المستوى' : 'هبوط إلى المستوى';
+      const msg =
+        `🔔 <b>تنبيه سعر:</b>\n` +
+        `العملة: <code>${a.symbol}</code> ${arrow}\n` +
+        `المستوى المستهدف: <code>${f(a.level, 6)}</code>\n` +
+        `السعر الحالي: <code>${f(p, 6)}</code>\n` +
+        `الاتجاه: ${dirLabel}`;
+
+      notify(`${a.symbol} ${arrow} ${f(a.level, 6)} (الحالي: ${f(p, 6)})`);
+      sendTelegramAlert(msg, `price_alert_${a.id}`);
+    }
   });
   if (ch) persist();
 }
+
 async function evalIdeas() {
   let ch = false;
   for (const i of S.ideas.filter((x) => !CLOSED_I.includes(x.status) && okSym(x.symbol))) {
@@ -1017,6 +1125,10 @@ function liveHtml(t) {
   const stale = !m || Date.now() - m.t > 20000, meta = `<div class="mut" style="margin-top:6px;font-size:12px">${stale ? '<span class="warn">آخر سعر معروف</span>' : '<span class="up">● مباشر</span>'}${m ? ' · ' + esc(m.src) + ' · ' + hms(m.t) : ''}</div>`;
   if (t.status !== 'open') { const dist = t.entry > 0 ? ((p - t.entry) / t.entry) * 100 : null; return `<div class="lg">${stc('السعر الحالي', f(p, 6))}${stc('المسافة للدخول', sg(dist) + f(dist, 2) + '%')}</div>` + meta; }
   const c = calc(t), d = dir(t), diff = d * (p - t.entry), pnl = diff * c.qty - (t.fees || 0), pct = c.usd > 0 ? (pnl / c.usd) * 100 : null, r = c.risk > 0 ? pnl / c.risk : null, k = cls(pnl), hit = d > 0 ? p <= t.stop : p >= t.stop;
+  if (hit) {
+    const symbol = t.symbol, warning_message = 'السعر عند وقف الخسارة أو تجاوزه (' + f(p, 6) + ')';
+    sendTelegramAlert(`⚠️ <b>تحذير مخاطرة:</b>\nالعملة: <code>${symbol}</code>\nالسبب: ${warning_message}`, `tr_warn_stop_${t.id}`);
+  }
   return `<div class="lg">${stc('السعر الحالي', f(p, 6))}${stc('فرق السعر', sg(diff) + f(diff, 6), cls(diff))}${stc('الربح / الخسارة', sg(pnl) + f(pnl) + ' $', k)}${stc('النسبة %', sg(pct) + f(pct, 2) + '%', k)}${stc('مضاعف R', sg(r) + f(r, 2) + 'R', k)}</div>` + (hit ? '<div class="err">السعر عند وقف الخسارة أو تجاوزه.</div>' : '') + meta;
 }
 function totalHtml() {
@@ -1104,16 +1216,6 @@ Object.assign(act, {
       box.innerHTML = `<div class="row"><b>${esc(s)}</b><b>${f(mid, 6)}</b></div>` + rows.map((r) => `<div style="margin-top:4px"><div class="row mut"><span>${f(r.lo, 4)} - ${f(r.lo + bw, 4)}</span><span class="${r.a ? 'dn' : 'up'}">${kfmt(r.v)} $</span></div><div class="bar risk ${r.a ? '' : 'good'}"><i style="width:${(r.v / mx) * 100}%"></i></div></div>`).join('') + '<div class="mut" style="margin-top:8px">الأحمر أوامر بيع معلقة فوق السعر والأخضر أوامر شراء تحته (±1.5%). الأوامر الكبيرة قد تعمل كدعم أو مقاومة، وقد تُلغى في أي لحظة.</div>';
     } catch (e) { box.textContent = 'تعذر تحميل عمق السوق. تحقق من الرمز والاتصال.'; }
   },
-  istat(d) {
-    const now = Date.now();
-    S.ideas = S.ideas.map((i) => {
-      if (i.id !== d.id) return i;
-      const px = ui.prices[i.symbol] || i.cur || i.entry;
-      const evs = [...(i.events || []), { type: 'manual_' + d.k, label: 'تحديث الحالة إلى: ' + ISTAT[d.k], price: px, at: now }];
-      return { ...i, status: d.k, resR: null, events: evs };
-    });
-    persist('idea_status'); render();
-  },
   async install() { const e = window.__inst; if (e) { e.prompt(); try { await e.userChoice; } catch (x) {} window.__inst = null; } else notify('من قائمة المتصفح اختر تثبيت التطبيق أو إضافة إلى الشاشة الرئيسية'); },
   async notif() { if (!('Notification' in window)) { notify('المتصفح لا يدعم الإشعارات'); return; } const p = await Notification.requestPermission(); notify(p === 'granted' ? 'تم تفعيل الإشعارات' : 'لم يتم السماح'); },
 });
@@ -1160,7 +1262,7 @@ function openIdea(i) {
   <label>الاتجاه<select id="i-side"><option value="long" ${t.side === 'long' ? 'selected' : ''}>شراء Long</option><option value="short" ${t.side === 'short' ? 'selected' : ''}>بيع Short</option></select></label><span></span>
   <label>سعر الدخول<input id="i-en" type="number" inputmode="decimal" step="any" value="${t.entry || ''}"></label>
   <label>وقف الخسارة<input id="i-st" type="number" inputmode="decimal" step="any" value="${t.stop || ''}"></label></div>
-  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
+  <datalist id="pairs">${['BTCUSDT', 'ETHUSDT', 'BNBUSDT', 'SOLUSDT', 'XRPUSDT', 'DOGEUSDT', 'FHEUSDT', 'CLOUSDT'].map((x) => `<option>${x}</option>`).join('')}</datalist>
   <div class="card" style="margin-top:8px"><div class="row"><b>الأهداف</b><button class="s" data-a="addtp">+ هدف</button></div><div class="grid g3" id="tps">${tps}</div></div>
   <div class="card"><b>حجم الصفقة</b><div class="grid"><label>طريقة الإدخال<select id="i-sm"><option value="qty" ${t.sizeMode !== 'usd' ? 'selected' : ''}>الكمية (وحدات)</option><option value="usd" ${t.sizeMode === 'usd' ? 'selected' : ''}>الحجم بالدولار USD</option></select></label>
   <label>الحجم<input id="i-size" type="number" inputmode="decimal" step="any" value="${(t.sizeMode === 'usd' ? t.usd : t.qty) || ''}"></label></div></div>
@@ -1197,8 +1299,14 @@ Object.assign(act, {
     const t = { kind: 'idea', symbol: g('i-sym').trim().toUpperCase(), tf: g('i-tf'), side: g('i-side'), entry: en, stop: num(g('i-st')), tps: $$('.tp').map((e) => num(e.value)).filter((x) => x > 0), sizeMode: mode, strategy: g('i-str').trim(), reason: g('i-why').trim(), note: g('i-note').trim().slice(0, 300) };
     t.qty = sz > 0 ? (mode === 'qty' ? sz : sz / en) : 0; t.usd = sz > 0 ? (mode === 'usd' ? sz : sz * en) : 0;
     const er = validate(t); if (er) { $('#i-err').textContent = er; return; }
-    if (ui.ideaForm && ui.ideaForm.id) S.ideas = S.ideas.map((i) => (i.id === ui.ideaForm.id ? { ...i, ...t } : i));
-    else S.ideas.unshift({ ...t, id: nid(), status: 'pending', tpi: 0, trailingStop: t.stop, events: [{ type: 'created', label: 'إضافة الفكرة (معلقة)', price: en, at: Date.now() }], at: Date.now() });
+    const isNewIdea = !(ui.ideaForm && ui.ideaForm.id);
+    const savedId = isNewIdea ? nid() : ui.ideaForm.id;
+    if (!isNewIdea) S.ideas = S.ideas.map((i) => (i.id === ui.ideaForm.id ? { ...i, ...t } : i));
+    else S.ideas.unshift({ ...t, id: savedId, status: 'pending', tpi: 0, trailingStop: t.stop, events: [{ type: 'created', label: 'إضافة الفكرة (معلقة)', price: en, at: Date.now() }], at: Date.now() });
+    if (isNewIdea) {
+      const symbol = t.symbol, direction = SIDE[t.side], entry_price = f(t.entry, 6), stop_loss = f(t.stop, 6);
+      sendTelegramAlert(`💡 <b>فكرة صفقة جديدة (معلقة):</b>\nالعملة: <code>${symbol}</code>\nالاتجاه: ${direction}\nسعر الدخول: ${entry_price}\nوقف الخسارة: ${stop_loss}`, `idea_save_${savedId}`);
+    }
     persist('save_idea'); closeSheet(() => go(() => { ui.tab = 'ideas'; ui.page = null; }, false));
   },
   itotrade(d) {
@@ -1208,7 +1316,16 @@ Object.assign(act, {
   },
   wadd() { const s = $('#w-sym').value.trim().toUpperCase(); if (!/^[A-Z0-9]{3,20}$/.test(s)) { $('#w-err').textContent = 'رمز غير صالح'; return; } S.watch.unshift({ id: nid(), symbol: s, level: num($('#w-lv').value) || null, note: $('#w-note').value.trim().slice(0, 200) }); persist(); render(); },
   wdel(d) { S.watch = S.watch.filter((x) => x.id !== d.id); persist(); render(); },
-  aladd() { const s = $('#al-sym').value.trim().toUpperCase(), lv = num($('#al-lv').value); if (!/^[A-Z0-9]{3,20}$/.test(s) || !(lv > 0)) { $('#al-err').textContent = 'أدخل رمزاً وسعراً صحيحين'; return; } S.alerts.unshift({ id: nid(), symbol: s, level: lv, dir: $('#al-dir').value, at: Date.now() }); persist(); render(); },
+  aladd() {
+    const s = $('#al-sym').value.trim().toUpperCase(), lv = num($('#al-lv').value);
+    if (!/^[A-Z0-9]{3,20}$/.test(s) || !(lv > 0)) { $('#al-err').textContent = 'أدخل رمزاً وسعراً صحيحين'; return; }
+    const dVal = $('#al-dir').value;
+    const newAlId = nid();
+    S.alerts.unshift({ id: newAlId, symbol: s, level: lv, dir: dVal, at: Date.now() });
+    const arrow = dVal === 'up' ? '↑' : '↓';
+    sendTelegramAlert(`📌 <b>تمت إضافة تنبيه سعر جديد:</b>\nالعملة: <code>${s}</code> ${arrow}\nالمستوى المستهدف: <code>${f(lv, 6)}</code>\nالاتجاه: ${dVal === 'up' ? 'عند الصعود إلى المستوى' : 'عند الهبوط إلى المستوى'}`, `al_add_${newAlId}`);
+    persist(); render();
+  },
   aldel(d) { S.alerts = S.alerts.filter((x) => x.id !== d.id); persist(); render(); },
   capadd() { const a = num($('#cp-a').value); if (!(a > 0)) return; S.cap.unshift({ id: nid(), type: $('#cp-t').value, amt: a, note: $('#cp-n').value.trim().slice(0, 100), at: Date.now() }); persist(); render(); },
   capdel(d) { S.cap = S.cap.filter((x) => x.id !== d.id); persist(); render(); },
@@ -1563,7 +1680,10 @@ Object.assign(act, {
   scidea2(d) {
     const x = ui.sc.map && ui.sc.map[d.s], c = (ui.sc.res && ui.sc.res.c) || (x && x.c) || scCfg(); if (!x || !c) return;
     const v = scLevels(x, c, x.ev && x.ev.side);
-    S.ideas.unshift({ kind: 'idea', id: nid(), symbol: x.s, tf: c.iv, side: v.side, entry: pr6(v.en), stop: pr6(v.st), tps: [pr6(v.t1), pr6(v.t2)], sizeMode: 'qty', qty: 0, usd: 0, strategy: 'MA/RSI Scanner', reason: 'فحص عملة (' + SIDE[v.side] + '): ' + (x.ev.ok.length ? x.ev.ok.join('، ') : SIDE[v.side]), note: '', status: 'pending', tpi: 0, trailingStop: pr6(v.st), events: [{ type: 'created', label: 'إضافة من الفحص (معلقة)', price: pr6(v.en), at: Date.now() }], at: Date.now() });
+    const newIdeaId = nid();
+    S.ideas.unshift({ kind: 'idea', id: newIdeaId, symbol: x.s, tf: c.iv, side: v.side, entry: pr6(v.en), stop: pr6(v.st), tps: [pr6(v.t1), pr6(v.t2)], sizeMode: 'qty', qty: 0, usd: 0, strategy: 'MA/RSI Scanner', reason: 'فحص عملة (' + SIDE[v.side] + '): ' + (x.ev.ok.length ? x.ev.ok.join('، ') : SIDE[v.side]), note: '', status: 'pending', tpi: 0, trailingStop: pr6(v.st), events: [{ type: 'created', label: 'إضافة من الفحص (معلقة)', price: pr6(v.en), at: Date.now() }], at: Date.now() });
+    const symbol = x.s, direction = SIDE[v.side], entry_price = f(pr6(v.en), 6), stop_loss = f(pr6(v.st), 6);
+    sendTelegramAlert(`💡 <b>فكرة صفقة جديدة (معلقة):</b>\nالعملة: <code>${symbol}</code>\nالاتجاه: ${direction}\nسعر الدخول: ${entry_price}\nوقف الخسارة: ${stop_loss}`, `sc_idea_${newIdeaId}`);
     persist('add_scanner_idea'); notify('أُضيفت فكرة ' + x.s + ' (' + SIDE[v.side] + ') إلى الأفكار');
   },
   sctrade(d) {
